@@ -1,7 +1,6 @@
 {
   "name": "expoter",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node ./src/convert.js"
@@ -13,5 +12,15 @@
     "axios-oauth-client": "^1.4.4",
     "csvtojson": "^2.0.10",
     "dotenv": "^11.0.0"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Chingie-11/openmrs-fhir-migration-scripts.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Chingie-11/openmrs-fhir-migration-scripts/issues"
+  },
+  "homepage": "https://github.com/Chingie-11/openmrs-fhir-migration-scripts#readme",
+  "description": ""
 }

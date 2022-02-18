@@ -18,11 +18,25 @@ async function main() {
     });
     const auth = await getAuthorizationCode();
     console.log(auth);
-    csv().fromFile(path.join(__dirname, "./assets/csv/exported.csv")).then(async (json) => {
+    csv().fromFile(path.join(__dirname, "./assets/csv/infants.csv")).then(async (json) => {
         const patients = [];
         json.forEach(patient => {
             const data = {
                 "resourceType": "Patient",
+                "meta": {
+                    "tag": [
+                        {
+                            "system": "https://d-tree.org",
+                            "code": "patient-exposed-infant"
+                        }
+                    ]
+                },
+                "identifier": [
+                    {
+                        "value": patient.identifier
+                    }
+                ],
+                "active": true,
                 "name": [
                     {
                         "use": "official",
@@ -30,7 +44,18 @@ async function main() {
                         "given": patient.given
                     }
                 ],
-                gender: patient.gender.toLowerCase()
+                "telecom" : [{   "system" : "phone",
+                "value" : patient.telecom, 
+                "use" : "home" 
+              }],
+                "gender": patient.gender.toLowerCase(),
+                "birthDate": patient.birthDate,
+                "address" : [{   "use" : "home", 
+                "type" : "physical", 
+                "city" : patient.city,
+                "district" : patient.district, 
+                "country" : "Malawi"}]
+            
             };
 
             patients.push({
