@@ -26,8 +26,8 @@ async function main() {
                 "meta": {
                     "tag": [
                         {
-                            "system": "https://d-tree.org",
-                            "code": "patient-exposed-infant"
+                            "system": "https://url",
+                            "code": "code"
                         }
                     ]
                 },
