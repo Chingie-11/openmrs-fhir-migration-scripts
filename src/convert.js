@@ -18,7 +18,7 @@ async function main() {
     });
     const auth = await getAuthorizationCode();
     console.log(auth);
-    csv().fromFile(path.join(__dirname, "./assets/csv/infants.csv")).then(async (json) => {
+    csv().fromFile(path.join(__dirname, "./assets/csv/minidump.csv")).then(async (json) => {
         const patients = [];
         json.forEach(patient => {
             const data = {
@@ -26,8 +26,8 @@ async function main() {
                 "meta": {
                     "tag": [
                         {
-                            "system": "https://url",
-                            "code": "code"
+                            "system": "https://d-tree.org",
+                            "code": "patient-client"
                         }
                     ]
                 },
@@ -54,14 +54,17 @@ async function main() {
                 "type" : "physical", 
                 "city" : patient.city,
                 "district" : patient.district, 
-                "country" : "Malawi"}]
+                "country" : "Malawi"}],
+                "managingOrganization": {
+                    "reference": "Organization/10173"
+                }
             
             };
 
             patients.push({
                 resource: data, "request": {
-                    "method": "POST",
-                    "url": "Patient"
+                    "method": "POST", //PUT
+                    "url": "Patient" //+ patient.identifier
                 }
             });
         });

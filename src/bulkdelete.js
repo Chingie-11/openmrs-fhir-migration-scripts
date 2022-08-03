@@ -19,7 +19,7 @@ async function main() {
     const auth = await getAuthorizationCode();
     console.log(auth);
     
-        const patients = ["", "75", "78", "79"];
+        const patients = ["200", "75", "78", "79"];
        
         patients.forEach(element => {
        
