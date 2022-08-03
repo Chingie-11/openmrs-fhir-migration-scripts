@@ -5,7 +5,7 @@ const fs = require("fs");
 const axios = require("axios").default;
 const oauth = require('axios-oauth-client');
 const util = require("util")
-
+const dayjs = require('dayjs')
 
 let tasks = {};
 
@@ -272,16 +272,36 @@ async function createTask() {
                 }
             };
 
+            const currentDate = dayjs(Date.now())
+            const dateThen = dayjs(patient.birthDate)
+
             if (patient.gender !== "male") {
                 tasks.push({
                     resource: womenHealth, "request": {
                         "method": "POST",
                         "url": "Task/"
                     }
-                })
+                });
+                 if (currentDate.diff(dateThen, 'year') <= 15) {
+                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-female-below-15-years"
+                }else{
+                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-female-above-15-years"
+                }
+            } else {
+
+                if (currentDate.diff(dateThen, 'year') <= 15) {
+
+                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-male-below-15-years"
+                }
+
             }
 
-            
+
+
+
+
+
+
 
             tasks.push(
                 {
