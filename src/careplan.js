@@ -411,17 +411,17 @@ async function createTask() {
 
 
 
-            const bundleResponse = axios.post(process.env.FHIR_BASEURL, taskDataRequest, {
+            const bundleResponse = await axios.post(process.env.FHIR_BASEURL, taskDataRequest, {
                 headers: {
                     "Authorization": `${auth.token_type} ${auth.access_token}`,
                     "Content-Type": "application/json"
                 }
             });
-            console.log((await bundleResponse).data);
+            console.log((bundleResponse).data);
 
 
             const userTasks = {}
-            bundleResponse.entry.forEach(task => {
+           bundleResponse.data.entry.forEach(task => {
                 const user = userTasks[task.resource.for.reference.split("/")[1]]
                 const newUserTask = {
                     taskId: task.resource.id,
@@ -443,8 +443,8 @@ async function createTask() {
                 "TB/COVID Screening": {
                     "outcomeReference": [
                         {
-                            "reference": "", //dynamic data to be taken from Tasks
-                            "display": "TB/COVID Screening" //dynamic data to be taken from tasks?
+                            "reference": "", 
+                            "display": "TB/COVID Screening"
                         }
                     ],
                     "detail": {
@@ -476,7 +476,7 @@ async function createTask() {
                 "Demographic Updates": {
                     "outcomeReference": [
                         {
-                            "reference": "Task/3b67efc1-942d-444c-a0ce-2d6b90b60da4", //dynamic
+                            "reference": "", 
                             "display": "Demographic Updates"
                         }
                     ],
@@ -509,7 +509,7 @@ async function createTask() {
                 "Guardian Updates": {
                     "outcomeReference": [
                         {
-                            "reference": "Task/32eaf9bb-fc7c-496f-ad41-3963450ee3ce",
+                            "reference": "",
                             "display": "Guardian Updates"
                         }
                     ],
@@ -542,7 +542,7 @@ async function createTask() {
                 "Vitals": {
                     "outcomeReference": [
                         {
-                            "reference": "Task/d4883442-9b83-47cf-a8dc-97a969859a9c",
+                            "reference": "",
                             "display": "Vitals"
                         }
                     ],
@@ -575,7 +575,7 @@ async function createTask() {
                 "Clinical Registration": {
                     "outcomeReference": [
                         {
-                            "reference": "Task/354efa71-2753-4bb3-bbde-bb9360232412",
+                            "reference": "",
                             "display": "Clinical Registration"
                         }
                     ],
@@ -641,7 +641,7 @@ async function createTask() {
                 "Women's Health Screening": {
                     "outcomeReference": [
                         {
-                            "reference": "", //dynamic data to be taken from Tasks
+                            "reference": "", 
                             "display": "Women's Health Screening"
                         }
                     ],
@@ -680,11 +680,10 @@ async function createTask() {
                 CarePlans.push({
                     resource: {
                         "resourceType": "CarePlan",
-                        "id": "116ed6df-9bc6-44f2-9b2c-5ea5fac02b65",
                         "identifier": [
                             {
                                 "use": "official",
-                                "value": "bbea690b-53ce-448d-880e-4f287fe7f095"
+                                "value": Math.random().toString(36).substring(2, 9)
                             }
                         ],
                         "status": "active",
@@ -704,10 +703,10 @@ async function createTask() {
                             "display": "Test CHW"
                         },
                         activity: tasks.map(task => {
-                            const model = taskModel[task.taskType]
+                            const model = JSON.parse(JSON.stringify(taskModel[task.taskType]))
 
-                            model.outcomeReference.reference = "Task/" + task.taskId
-                            model.outcomeReference.display = task.taskType
+                            model.outcomeReference[0] = { reference : "Task/" + task.taskId, display: task.taskType  }
+                      
 
                             return model
                         })
@@ -728,13 +727,13 @@ async function createTask() {
                 ]
             }
 
-            const carePlanResponse = axios.post(process.env.FHIR_BASEURL, constructedCarePlan, {
+            const carePlanResponse = await axios.post(process.env.FHIR_BASEURL, constructedCarePlan, {
                 headers: {
                     "Authorization": `${auth.token_type} ${auth.access_token}`,
                     "Content-Type": "application/json"
                 }
             });
-            console.log((await carePlanbundleResponse).data);
+            console.log((carePlanResponse).data);
 
 
 
