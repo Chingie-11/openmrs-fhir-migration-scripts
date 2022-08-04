@@ -25,7 +25,8 @@ async function createTask() {
     csv().fromFile(path.join(__dirname, "./assets/csv/minidump.csv")).then(async (json) => {
         const tasks = [];
         let dateNow = new Date();
-        let dateEnd = dateNow.setDate(dateNow.getDate() + 14).toISOString;
+        let today = dayjs(Date.now())
+        let dateEnd = today.add(14, "day").format();
         json.forEach(patient => {
             const demographicUpdates = {
                 "resourceType": "Task",
@@ -92,7 +93,7 @@ async function createTask() {
                     "display": "Test CHW"
                 },
                 "reasonReference": {
-                    "reference": "Questionnaire/patient-guardian-updates-15-years-plus",
+                    "reference": "Questionnaire/patient-guardian-updates-0-to-15-years",
                     "display": "Guardian Updates"
                 }
             };
@@ -282,16 +283,49 @@ async function createTask() {
                         "url": "Task/"
                     }
                 });
-                 if (currentDate.diff(dateThen, 'year') <= 15) {
-                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-female-below-15-years"
-                }else{
-                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-female-above-15-years"
+                if (currentDate.diff(dateThen, 'year') <= 15) {
+                    guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-0-to-15-years"
+                } 
+
+                if (currentDate.diff(dateThen, 'month') < 6) {
+
+                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-female-0-to-6-months"
+
+                } else if (currentDate.diff(dateThen, 'month') >= 6 && currentDate.diff(dateThen, 'year') < 5) {
+
+                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-6-months-to-5-years"
+
                 }
+                else if (currentDate.diff(dateThen, 'year') < 15 && currentDate.diff(dateThen, 'year') >= 5) {
+
+                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-5-to-15-years"
+
+                } else if (currentDate.diff(dateThen, 'year') >= 15) {
+
+                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-female-15-years-plus"
+                    guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
+                }
+
+
             } else {
 
-                if (currentDate.diff(dateThen, 'year') <= 15) {
+                if (currentDate.diff(dateThen, 'month') < 6) {
 
-                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-male-below-15-years"
+                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-male-0-to-6-months"
+
+                } else if (currentDate.diff(dateThen, 'month') >= 6 && currentDate.diff(dateThen, 'year') < 5) {
+
+                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-6-months-to-5-years"
+
+                }
+                else if (currentDate.diff(dateThen, 'year') < 15 && currentDate.diff(dateThen, 'year') >= 5) {
+
+                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-5-to-15-years"
+
+                } else if (currentDate.diff(dateThen, 'year') >= 15) {
+
+                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-male-15-years-plus"
+                    guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
                 }
 
             }
@@ -391,7 +425,8 @@ async function createTask() {
                 const user = userTasks[task.resource.for.reference.split("/")[1]]
                 const newUserTask = {
                     taskId: task.resource.id,
-                    taskType: task.resource.description
+                    taskType: task.resource.description,
+                    userName: task.resource.for.display
                 }
                 if (user === undefined || user === null) {
                     userTasks[task.resource.for.reference.split("/")[1]] = [newUserTask]
@@ -427,7 +462,7 @@ async function createTask() {
                         "status": "in-progress",
                         "scheduledPeriod": {
                             "start": dateNow.toISOString(),
-                            "end": "2022-08-08T11:31:36+02:00"
+                            "end": dateEnd
                         },
                         "performer": [
                             {
@@ -460,7 +495,7 @@ async function createTask() {
                         "status": "in-progress",
                         "scheduledPeriod": {
                             "start": dateNow.toISOString(),
-                            "end": "2022-08-08T11:31:36+02:00"
+                            "end": dateEnd
                         },
                         "performer": [
                             {
@@ -493,7 +528,7 @@ async function createTask() {
                         "status": "in-progress",
                         "scheduledPeriod": {
                             "start": dateNow.toISOString(),
-                            "end": "2022-08-08T11:31:36+02:00"
+                            "end": dateEnd
                         },
                         "performer": [
                             {
@@ -526,7 +561,7 @@ async function createTask() {
                         "status": "in-progress",
                         "scheduledPeriod": {
                             "start": dateNow.toISOString(),
-                            "end": "2022-08-08T11:31:36+02:00"
+                            "end": dateEnd
                         },
                         "performer": [
                             {
@@ -559,7 +594,7 @@ async function createTask() {
                         "status": "in-progress",
                         "scheduledPeriod": {
                             "start": dateNow.toISOString(),
-                            "end": "2022-08-08T11:31:36+02:00"
+                            "end": dateEnd
                         },
                         "performer": [
                             {
@@ -573,7 +608,7 @@ async function createTask() {
                 "TB History, Regimen and Next Appointment": {
                     "outcomeReference": [
                         {
-                            "reference": "Task/5eb1ef65-13ed-4845-9431-528798e12669",
+                            "reference": "",
                             "display": "TB History, Regimen and Next Appointment"
                         }
                     ],
@@ -592,7 +627,7 @@ async function createTask() {
                         "status": "in-progress",
                         "scheduledPeriod": {
                             "start": dateNow.toISOString(),
-                            "end": "2022-08-08T11:31:36+02:00"
+                            "end": dateEnd
                         },
                         "performer": [
                             {
@@ -601,6 +636,39 @@ async function createTask() {
                             }
                         ],
                         "description": "TB History, Regimen and Next Appointment"
+                    }
+                },
+                "Women's Health Screening": {
+                    "outcomeReference": [
+                        {
+                            "reference": "", //dynamic data to be taken from Tasks
+                            "display": "Women's Health Screening"
+                        }
+                    ],
+                    "detail": {
+                        "kind": "Task",
+                        "code": {
+                            "coding": [
+                                {
+                                    "system": "https://d-tree.org",
+                                    "code": "client-womens-health-screening",
+                                    "display": "Women's Health Screening"
+                                }
+                            ],
+                            "text": "TB/COVID Screening"
+                        },
+                        "status": "in-progress",
+                        "scheduledPeriod": {
+                            "start": dateNow.toISOString(),
+                            "end": dateEnd
+                        },
+                        "performer": [
+                            {
+                                "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
+                                "display": "Test CHW"
+                            }
+                        ],
+                        "description": "Women's Health Screening"
                     }
                 }
 
@@ -623,14 +691,14 @@ async function createTask() {
                         "intent": "plan",
                         "title": "ART Client Visit",
                         "subject": {
-                            "reference": "Patient/" + patient.patientid,
-                            "display": patient.given + patient.family
+                            "reference": "Patient/" + patientid,
+                            "display": tasks.userName
                         },
                         "period": {
-                            "start": dateNow.toISOString,
-                            "end": "2022-08-08T11:31:36+02:00", //to-do, find +14 days extra
+                            "start": dateNow.toISOString(),
+                            "end": dateEnd
                         },
-                        "created": dateNow.toISOString,
+                        "created": dateNow.toISOString(),
                         "author": {
                             "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
                             "display": "Test CHW"
@@ -714,10 +782,10 @@ async function main() {
                     "display": patient.given + patient.family
                 },
                 "period": {
-                    "start": "2022-07-25T11:31:36+02:00", //to-do, find now function
-                    "end": "2022-08-08T11:31:36+02:00", //to-do, find +14 days extra
+                    "start": dateNow.toISOString(), 
+                    "end": dateEnd,
                 },
-                "created": "2022-07-25T11:31:36+02:00", //To-do, find now function
+                "created": dateNow.toISOString(), 
                 "author": {
                     "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
                     "display": "Test CHW"
@@ -744,8 +812,8 @@ async function main() {
                             },
                             "status": "in-progress",
                             "scheduledPeriod": {
-                                "start": "2022-07-25T11:31:36+02:00",
-                                "end": "2022-08-08T11:31:36+02:00"
+                                "start": dateNow.toISOString(),
+                                "end": dateEnd
                             },
                             "performer": [
                                 {
@@ -777,8 +845,8 @@ async function main() {
                             },
                             "status": "in-progress",
                             "scheduledPeriod": {
-                                "start": "2022-07-25T11:31:36+02:00",
-                                "end": "2022-08-08T11:31:36+02:00"
+                                "start": dateNow.toISOString(),
+                                "end": dateEnd
                             },
                             "performer": [
                                 {
@@ -810,8 +878,8 @@ async function main() {
                             },
                             "status": "in-progress",
                             "scheduledPeriod": {
-                                "start": "2022-07-25T11:31:36+02:00",
-                                "end": "2022-08-08T11:31:36+02:00"
+                                "start": dateNow.toISOString(),
+                                "end": dateEnd
                             },
                             "performer": [
                                 {
@@ -843,8 +911,8 @@ async function main() {
                             },
                             "status": "in-progress",
                             "scheduledPeriod": {
-                                "start": "2022-07-25T11:31:36+02:00",
-                                "end": "2022-08-08T11:31:36+02:00"
+                                "start": dateNow.toISOString(),
+                                "end": dateEnd
                             },
                             "performer": [
                                 {
@@ -876,8 +944,8 @@ async function main() {
                             },
                             "status": "in-progress",
                             "scheduledPeriod": {
-                                "start": "2022-07-25T11:31:36+02:00",
-                                "end": "2022-08-08T11:31:36+02:00"
+                                "start": dateNow.toISOString(),
+                                "end": dateEnd
                             },
                             "performer": [
                                 {
@@ -909,8 +977,8 @@ async function main() {
                             },
                             "status": "in-progress",
                             "scheduledPeriod": {
-                                "start": "2022-07-25T11:31:36+02:00",
-                                "end": "2022-08-08T11:31:36+02:00"
+                                "start": dateNow.toISOString(),
+                                "end": dateEnd
                             },
                             "performer": [
                                 {
