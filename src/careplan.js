@@ -208,7 +208,7 @@ async function createTask() {
                     "display": "Vitals"
                 }
             };
-            
+
             const womenHealth = {
                 "resourceType": "Task",
                 "meta": {
@@ -344,56 +344,99 @@ async function createTask() {
 
             const currentDate = dayjs(Date.now())
             const dateThen = dayjs(patient.birthDate)
-
+            let yearsDiff = currentDate.diff(dateThen, 'year')
+            let monthsDiff = currentDate.diff(dateThen, 'month')
             if (patient.gender !== "male") {
+               
+
+                if (monthsDiff < 6) {
+
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-female-0-to-6-months"
+
+                } else if (monthsDiff >= 6 && yearsDiff < 5) {
+
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-6-months-to-5-years"
+
+                }
+                else if (yearsDiff < 9 && yearsDiff >= 5) {
+
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-5-to-13-years"
+
+                } else if (yearsDiff < 13 && yearsDiff >= 9) {
+                    womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-9-to-14-years"
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-5-to-13-years"
+
+                } else if (yearsDiff < 14 && yearsDiff >= 13) {
+                    womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-9-to-14-years"
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-13-to-15-years"
+
+                } else if (yearsDiff < 15 && yearsDiff >= 14) {
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-13-to-15-years"
+
+                } else if (yearsDiff < 25 && yearsDiff >= 15) {
+
+
+                    womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-15-to-25-years"
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-female-15-to-30-years"
+                    guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
+
+                } else if (yearsDiff < 30 && yearsDiff >= 25) {
+
+
+                    womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-25-years-plus"
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-female-15-to-30-years"
+                    guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
+
+                } else if (yearsDiff < 40 && yearsDiff >= 30) {
+                    womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-25-years-plus"
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-female-30-to-40-years"
+                    guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
+
+                } else if (yearsDiff >= 40) {
+                    womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-25-years-plus"
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-female-40-years-plus"
+                    guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
+                }
+
                 tasks.push({
                     resource: womenHealth, "request": {
                         "method": "POST",
                         "url": "Task/"
                     }
                 });
-                if (currentDate.diff(dateThen, 'year') <= 15) {
-                    guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-0-to-15-years"
-                } 
-
-                if (currentDate.diff(dateThen, 'month') < 6) {
-
-                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-female-0-to-6-months"
-
-                } else if (currentDate.diff(dateThen, 'month') >= 6 && currentDate.diff(dateThen, 'year') < 5) {
-
-                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-6-months-to-5-years"
-
-                }
-                else if (currentDate.diff(dateThen, 'year') < 15 && currentDate.diff(dateThen, 'year') >= 5) {
-
-                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-5-to-15-years"
-
-                } else if (currentDate.diff(dateThen, 'year') >= 15) {
-
-                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-female-15-years-plus"
-                    guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
-                }
-
 
             } else {
 
-                if (currentDate.diff(dateThen, 'month') < 6) {
+                if (monthsDiff < 6) {
 
-                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-male-0-to-6-months"
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-male-0-to-6-months"
 
-                } else if (currentDate.diff(dateThen, 'month') >= 6 && currentDate.diff(dateThen, 'year') < 5) {
+                } else if (monthsDiff >= 6 && yearsDiff < 5) {
 
-                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-6-months-to-5-years"
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-6-months-to-5-years"
 
                 }
-                else if (currentDate.diff(dateThen, 'year') < 15 && currentDate.diff(dateThen, 'year') >= 5) {
+                else if (yearsDiff < 13 && yearsDiff >= 5) {
 
-                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-5-to-15-years"
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-5-to-13-years"
 
-                } else if (currentDate.diff(dateThen, 'year') >= 15) {
+                } else if (yearsDiff < 15 && yearsDiff >= 13) {
 
-                    vitals.reasonReference.reference = "Qustionnaire/art-client-vitals-male-15-years-plus"
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-13-to-15-years"
+
+                } else if (yearsDiff < 30 && yearsDiff >= 15) {
+
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-male-15-to-30-years"
+                    guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
+
+                } else if (yearsDiff < 40 && yearsDiff >= 30) {
+
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-male-30-to-40-years"
+                    guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
+
+                } else if (yearsDiff >= 40) {
+
+                    vitals.reasonReference.reference = "Questionnaire/art-client-vitals-male-40-years-plus"
                     guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
                 }
 
@@ -490,7 +533,7 @@ async function createTask() {
 
 
             const userTasks = {}
-           bundleResponse.data.entry.forEach(task => {
+            bundleResponse.data.entry.forEach(task => {
                 const user = userTasks[task.resource.for.reference.split("/")[1]]
                 const newUserTask = {
                     taskId: task.resource.id,
@@ -512,7 +555,7 @@ async function createTask() {
                 "TB/COVID Screening": {
                     "outcomeReference": [
                         {
-                            "reference": "", 
+                            "reference": "",
                             "display": "TB/COVID Screening"
                         }
                     ],
@@ -545,7 +588,7 @@ async function createTask() {
                 "Demographic Updates": {
                     "outcomeReference": [
                         {
-                            "reference": "", 
+                            "reference": "",
                             "display": "Demographic Updates"
                         }
                     ],
@@ -710,7 +753,7 @@ async function createTask() {
                 "Women's Health Screening": {
                     "outcomeReference": [
                         {
-                            "reference": "", 
+                            "reference": "",
                             "display": "Women's Health Screening"
                         }
                     ],
@@ -774,8 +817,8 @@ async function createTask() {
                         activity: tasks.map(task => {
                             const model = JSON.parse(JSON.stringify(taskModel[task.taskType]))
 
-                            model.outcomeReference[0] = { reference : "Task/" + task.taskId, display: task.taskType  }
-                      
+                            model.outcomeReference[0] = { reference: "Task/" + task.taskId, display: task.taskType }
+
 
                             return model
                         })
@@ -850,10 +893,10 @@ async function main() {
                     "display": patient.given + patient.family
                 },
                 "period": {
-                    "start": dateNow.toISOString(), 
+                    "start": dateNow.toISOString(),
                     "end": dateEnd,
                 },
-                "created": dateNow.toISOString(), 
+                "created": dateNow.toISOString(),
                 "author": {
                     "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
                     "display": "Test CHW"
