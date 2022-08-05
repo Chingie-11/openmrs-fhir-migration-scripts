@@ -28,8 +28,60 @@ async function createTask() {
         let today = dayjs(Date.now())
         let dateEnd = today.add(14, "day").format();
         json.forEach(patient => {
+
+            const tbCovid = {
+                "resourceType": "Task",
+                "meta": {
+                    "tag": [
+                        {
+                            "system": "https://d-tree.org",
+                            "code": "clinic-visit-task-order-1"
+                        }
+                    ]
+                },
+                "identifier": [
+                    {
+                        "use": "official",
+                        "value": Math.random().toString(36).substring(2, 9)
+                    }
+                ],
+                "status": "ready",
+                "intent": "plan",
+                "priority": "routine",
+                "description": "TB/COVID Screening",
+                "for": {
+                    "reference": "Patient/" + patient.identifier,
+                    "display": patient.given + patient.family
+                },
+                "executionPeriod": {
+                    "start": dateNow.toISOString(),
+                    "end": dateEnd
+                },
+                "authoredOn": dateNow.toISOString(),
+                "requester": {
+                    "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
+                    "display": "Test CHW"
+                },
+                "owner": {
+                    "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
+                    "display": "Test CHW"
+                },
+                "reasonReference": {
+                    "reference": "Questionnaire/patient-tb-covid",
+                    "display": "TB/COVID Screening"
+                }
+            };
+
             const demographicUpdates = {
                 "resourceType": "Task",
+                "meta": {
+                    "tag": [
+                        {
+                            "system": "https://d-tree.org",
+                            "code": "clinic-visit-task-order-2"
+                        }
+                    ]
+                },
                 "identifier": [
                     {
                         "use": "official",
@@ -65,6 +117,14 @@ async function createTask() {
 
             const guardianUpdates = {
                 "resourceType": "Task",
+                "meta": {
+                    "tag": [
+                        {
+                            "system": "https://d-tree.org",
+                            "code": "clinic-visit-task-order-3"
+                        }
+                    ]
+                },
                 "identifier": [
                     {
                         "use": "official",
@@ -98,8 +158,16 @@ async function createTask() {
                 }
             };
 
-            const tbCovid = {
+            const vitals = {
                 "resourceType": "Task",
+                "meta": {
+                    "tag": [
+                        {
+                            "system": "https://d-tree.org",
+                            "code": "clinic-visit-task-order-4"
+                        }
+                    ]
+                },
                 "identifier": [
                     {
                         "use": "official",
@@ -109,7 +177,7 @@ async function createTask() {
                 "status": "ready",
                 "intent": "plan",
                 "priority": "routine",
-                "description": "TB/COVID Screening",
+                "description": "Vitals",
                 "for": {
                     "reference": "Patient/" + patient.identifier,
                     "display": patient.given + patient.family
@@ -128,13 +196,21 @@ async function createTask() {
                     "display": "Test CHW"
                 },
                 "reasonReference": {
-                    "reference": "Questionnaire/patient-tb-covid",
-                    "display": "TB/COVID Screening"
+                    "reference": "Questionnaire/art-client-vitals-male-15-years-plus",
+                    "display": "Vitals"
                 }
             };
-
+            
             const womenHealth = {
                 "resourceType": "Task",
+                "meta": {
+                    "tag": [
+                        {
+                            "system": "https://d-tree.org",
+                            "code": "clinic-visit-task-order-5"
+                        }
+                    ]
+                },
                 "identifier": [
                     {
                         "use": "official",
@@ -170,6 +246,14 @@ async function createTask() {
 
             const clinicalReg = {
                 "resourceType": "Task",
+                "meta": {
+                    "tag": [
+                        {
+                            "system": "https://d-tree.org",
+                            "code": "clinic-visit-task-order-6"
+                        }
+                    ]
+                },
                 "identifier": [
                     {
                         "use": "official",
@@ -203,43 +287,16 @@ async function createTask() {
                 }
             };
 
-            const vitals = {
-                "resourceType": "Task",
-                "identifier": [
-                    {
-                        "use": "official",
-                        "value": Math.random().toString(36).substring(2, 9)
-                    }
-                ],
-                "status": "ready",
-                "intent": "plan",
-                "priority": "routine",
-                "description": "Vitals",
-                "for": {
-                    "reference": "Patient/" + patient.identifier,
-                    "display": patient.given + patient.family
-                },
-                "executionPeriod": {
-                    "start": dateNow.toISOString(),
-                    "end": dateEnd
-                },
-                "authoredOn": dateNow.toISOString(),
-                "requester": {
-                    "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                    "display": "Test CHW"
-                },
-                "owner": {
-                    "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                    "display": "Test CHW"
-                },
-                "reasonReference": {
-                    "reference": "Questionnaire/art-client-vitals-male-15-years-plus",
-                    "display": "Vitals"
-                }
-            };
-
             const nextAppointment = {
                 "resourceType": "Task",
+                "meta": {
+                    "tag": [
+                        {
+                            "system": "https://d-tree.org",
+                            "code": "clinic-visit-task-order-7"
+                        }
+                    ]
+                },
                 "identifier": [
                     {
                         "use": "official",
