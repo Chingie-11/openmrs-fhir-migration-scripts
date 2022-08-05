@@ -78,6 +78,10 @@ async function createTask() {
                     "tag": [
                         {
                             "system": "https://d-tree.org",
+                            "code": "guardian-visit"
+                        },
+                        {
+                            "system": "https://d-tree.org",
                             "code": "clinic-visit-task-order-2"
                         }
                     ]
@@ -119,6 +123,10 @@ async function createTask() {
                 "resourceType": "Task",
                 "meta": {
                     "tag": [
+                        {
+                            "system": "https://d-tree.org",
+                            "code": "guardian-visit"
+                        },
                         {
                             "system": "https://d-tree.org",
                             "code": "clinic-visit-task-order-3"
@@ -291,6 +299,10 @@ async function createTask() {
                 "resourceType": "Task",
                 "meta": {
                     "tag": [
+                        {
+                            "system": "https://d-tree.org",
+                            "code": "guardian-visit"
+                        },
                         {
                             "system": "https://d-tree.org",
                             "code": "clinic-visit-task-order-7"
