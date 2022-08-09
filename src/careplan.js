@@ -55,7 +55,7 @@ async function createTask() {
                 },
                 "executionPeriod": {
                     "start": dateNow.toISOString(),
-                    "end": dateEnd
+                    "end": patient.appointmentDate //To be addede to the dumps  
                 },
                 "authoredOn": dateNow.toISOString(),
                 "requester": {
@@ -102,7 +102,7 @@ async function createTask() {
                 },
                 "executionPeriod": {
                     "start": dateNow.toISOString(),
-                    "end": dateEnd
+                    "end": patient.appointmentDate //To be addede to the dumps 
                 },
                 "authoredOn": dateNow.toISOString(),
                 "requester": {
@@ -149,7 +149,7 @@ async function createTask() {
                 },
                 "executionPeriod": {
                     "start": dateNow.toISOString(),
-                    "end": dateEnd
+                    "end": patient.appointmentDate //To be addede to the dumps 
                 },
                 "authoredOn": dateNow.toISOString(),
                 "requester": {
@@ -192,7 +192,7 @@ async function createTask() {
                 },
                 "executionPeriod": {
                     "start": dateNow.toISOString(),
-                    "end": dateEnd
+                    "end": patient.appointmentDate //To be addede to the dumps 
                 },
                 "authoredOn": dateNow.toISOString(),
                 "requester": {
@@ -235,7 +235,7 @@ async function createTask() {
                 },
                 "executionPeriod": {
                     "start": dateNow.toISOString(),
-                    "end": dateEnd
+                    "end": patient.appointmentDate //To be addede to the dumps 
                 },
                 "authoredOn": dateNow.toISOString(),
                 "requester": {
@@ -278,7 +278,7 @@ async function createTask() {
                 },
                 "executionPeriod": {
                     "start": dateNow.toISOString(),
-                    "end": dateEnd
+                    "end": patient.appointmentDate //To be addede to the dumps 
                 },
                 "authoredOn": dateNow.toISOString(),
                 "requester": {
@@ -325,7 +325,7 @@ async function createTask() {
                 },
                 "executionPeriod": {
                     "start": dateNow.toISOString(),
-                    "end": dateEnd
+                    "end": patient.appointmentDate //To be addede to the dumps 
                 },
                 "authoredOn": dateNow.toISOString(),
                 "requester": {
@@ -538,7 +538,9 @@ async function createTask() {
                 const newUserTask = {
                     taskId: task.resource.id,
                     taskType: task.resource.description,
-                    userName: task.resource.for.display
+                    userName: task.resource.for.display,
+                    appointmentDate: task.resource.executionPeriod.end,
+                    currentDate: task.resource.executionPeriod.start
                 }
                 if (user === undefined || user === null) {
                     userTasks[task.resource.for.reference.split("/")[1]] = [newUserTask]
@@ -574,7 +576,7 @@ async function createTask() {
                         "status": "in-progress",
                         "scheduledPeriod": {
                             "start": dateNow.toISOString(),
-                            "end": dateEnd
+                            "end": ""
                         },
                         "performer": [
                             {
@@ -607,7 +609,7 @@ async function createTask() {
                         "status": "in-progress",
                         "scheduledPeriod": {
                             "start": dateNow.toISOString(),
-                            "end": dateEnd
+                            "end": ""
                         },
                         "performer": [
                             {
@@ -640,7 +642,7 @@ async function createTask() {
                         "status": "in-progress",
                         "scheduledPeriod": {
                             "start": dateNow.toISOString(),
-                            "end": dateEnd
+                            "end": ""
                         },
                         "performer": [
                             {
@@ -673,7 +675,7 @@ async function createTask() {
                         "status": "in-progress",
                         "scheduledPeriod": {
                             "start": dateNow.toISOString(),
-                            "end": dateEnd
+                            "end": ""
                         },
                         "performer": [
                             {
@@ -706,7 +708,7 @@ async function createTask() {
                         "status": "in-progress",
                         "scheduledPeriod": {
                             "start": dateNow.toISOString(),
-                            "end": dateEnd
+                            "end": ""
                         },
                         "performer": [
                             {
@@ -739,7 +741,7 @@ async function createTask() {
                         "status": "in-progress",
                         "scheduledPeriod": {
                             "start": dateNow.toISOString(),
-                            "end": dateEnd
+                            "end": ""
                         },
                         "performer": [
                             {
@@ -772,7 +774,7 @@ async function createTask() {
                         "status": "in-progress",
                         "scheduledPeriod": {
                             "start": dateNow.toISOString(),
-                            "end": dateEnd
+                            "end": ""
                         },
                         "performer": [
                             {
@@ -807,7 +809,7 @@ async function createTask() {
                         },
                         "period": {
                             "start": dateNow.toISOString(),
-                            "end": dateEnd
+                            "end": tasks.appointmentDate
                         },
                         "created": dateNow.toISOString(),
                         "author": {
@@ -818,6 +820,7 @@ async function createTask() {
                             const model = JSON.parse(JSON.stringify(taskModel[task.taskType]))
 
                             model.outcomeReference[0] = { reference: "Task/" + task.taskId, display: task.taskType }
+                            model.detail.scheduledPeriod.end = tasks.appointmentDate
 
 
                             return model
