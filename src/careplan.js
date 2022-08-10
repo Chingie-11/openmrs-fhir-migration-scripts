@@ -55,7 +55,7 @@ async function createTask() {
                 },
                 "executionPeriod": {
                     "start": dateNow.toISOString(),
-                    "end": patient.appointmentDate //To be addede to the dumps  
+                    "end": patient.nextAppointment
                 },
                 "authoredOn": dateNow.toISOString(),
                 "requester": {
@@ -102,7 +102,7 @@ async function createTask() {
                 },
                 "executionPeriod": {
                     "start": dateNow.toISOString(),
-                    "end": patient.appointmentDate //To be addede to the dumps 
+                    "end": patient.nextAppointment 
                 },
                 "authoredOn": dateNow.toISOString(),
                 "requester": {
@@ -149,7 +149,7 @@ async function createTask() {
                 },
                 "executionPeriod": {
                     "start": dateNow.toISOString(),
-                    "end": patient.appointmentDate //To be addede to the dumps 
+                    "end": patient.nextAppointment 
                 },
                 "authoredOn": dateNow.toISOString(),
                 "requester": {
@@ -192,7 +192,7 @@ async function createTask() {
                 },
                 "executionPeriod": {
                     "start": dateNow.toISOString(),
-                    "end": patient.appointmentDate //To be addede to the dumps 
+                    "end": patient.nextAppointment 
                 },
                 "authoredOn": dateNow.toISOString(),
                 "requester": {
@@ -235,7 +235,7 @@ async function createTask() {
                 },
                 "executionPeriod": {
                     "start": dateNow.toISOString(),
-                    "end": patient.appointmentDate //To be addede to the dumps 
+                    "end": patient.nextAppointment 
                 },
                 "authoredOn": dateNow.toISOString(),
                 "requester": {
@@ -278,7 +278,7 @@ async function createTask() {
                 },
                 "executionPeriod": {
                     "start": dateNow.toISOString(),
-                    "end": patient.appointmentDate //To be addede to the dumps 
+                    "end": patient.nextAppointment
                 },
                 "authoredOn": dateNow.toISOString(),
                 "requester": {
@@ -325,7 +325,7 @@ async function createTask() {
                 },
                 "executionPeriod": {
                     "start": dateNow.toISOString(),
-                    "end": patient.appointmentDate //To be addede to the dumps 
+                    "end": patient.nextAppointment 
                 },
                 "authoredOn": dateNow.toISOString(),
                 "requester": {
@@ -803,14 +803,12 @@ async function createTask() {
                         "status": "active",
                         "intent": "plan",
                         "title": "ART Client Visit",
-                        "subject": {
+                        "subject": tasks.map(x => ({     
                             "reference": "Patient/" + patientid,
-                            "display": tasks.userName
-                        },
-                        "period": {
+                            "display": x.userName })) ,
+                        "period":  tasks.map(x => ({     
                             "start": dateNow.toISOString(),
-                            "end": tasks.appointmentDate
-                        },
+                            "end": x.appointmentDate })),
                         "created": dateNow.toISOString(),
                         "author": {
                             "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
@@ -818,10 +816,9 @@ async function createTask() {
                         },
                         activity: tasks.map(task => {
                             const model = JSON.parse(JSON.stringify(taskModel[task.taskType]))
-
+                            
                             model.outcomeReference[0] = { reference: "Task/" + task.taskId, display: task.taskType }
-                            model.detail.scheduledPeriod.end = tasks.appointmentDate
-
+                            model.detail.scheduledPeriod.end = task.appointmentDate
 
                             return model
                         })
