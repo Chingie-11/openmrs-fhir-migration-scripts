@@ -27,15 +27,17 @@ async function main() {
                     "tag": [
                         {
                             "system": "https://d-tree.org",
-                            "code": "patient-client"
+                            "code": "client-already-on-art"
                         }
                     ]
                 },
                 "identifier": [
                     {
-                        "value": patient.identifier
+                        "value": patient.identifier,
+                        "use": "official"
                     }
                 ],
+
                 "active": true,
                 "name": [
                     {
@@ -44,21 +46,32 @@ async function main() {
                         "given": patient.given
                     }
                 ],
-                "telecom" : [{   "system" : "phone",
-                "value" : patient.telecom, 
-                "use" : "home" 
-              }],
+                "telecom": [{
+                    "system": "phone",
+                    "value": patient.telecom,
+                    "use": "home"
+                }],
                 "gender": patient.gender.toLowerCase(),
                 "birthDate": patient.birthDate,
-                "address" : [{   "use" : "home", 
-                "type" : "physical", 
-                "city" : patient.city,
-                "district" : patient.district, 
-                "country" : "Malawi"}],
+                "address": [{
+                    "use": "home",
+                    "type": "physical",
+                    "city": patient.city,
+                    "district": patient.district,
+                    "country": "Malawi"
+                }],
                 "managingOrganization": {
                     "reference": "Organization/10173"
-                }
-            
+                },
+                "generalPractitioner": [{
+                    "reference": "",
+                    "type": "Practitioner",
+                    "identifier": {
+                        "use": "official",
+                        "value": identifier
+                    }
+                }]
+
             };
 
             patients.push({
