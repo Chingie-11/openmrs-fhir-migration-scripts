@@ -7,28 +7,34 @@ const oauth = require('axios-oauth-client');
 const util = require("util")
 const dayjs = require('dayjs')
 
+const getAuthCode = require ("./network.js")
+const getBundleResourceIds = require ("./bundleDetails")
+const performScreening = require ("./screening")
+const constructBundle = require ("./constructBundle")
+const networkCall = require ("./networkCall")
+const createTaskModel = require ("./taskModel")
+const createTasks = require ("./task")
+const createPatient = require ("./patientResource")
 
 
-async function createTask() {
-    const getAuthorizationCode = oauth.client(axios.create(), {
-        url: process.env.FHIR_TOKEN_URL,
-        grant_type: process.env.FHIR_GRANT,
-        client_id: process.env.FHIR_CLIENT_ID,
-        client_secret: process.env.FHIR_SECRET,
-        username: process.env.FHIR_USERNAME,
-        password: process.env.FHIR_PASSWORD,
-        scope: process.env.FHIR_SCROPE
-    });     //moved to separte file
+async function main() {
+  
+  
 
+   //Authentication information 
+    const auth = await getAuthCode();
 
-    const auth = await getAuthorizationCode();
     console.log(auth);
-    csv().fromFile(path.join(__dirname, "./assets/csv/minidump.csv")).then(async (json) => {  //await consistency
+
+    //converting CSV file to JSON 
+    csv().fromFile(path.join(__dirname, "./assets/csv/minidump.csv")).then(async (json) => {
         const patients = [];
-        const userNextAppointments = {}
+        const clientDetails = {}
+        
+        //lopping through the created JSON to get each client's details and populating them in client details for future use with tasks.
         json.forEach(patient => {
 
-            userNextAppointments[patient.identifier] = {
+            clientDetails[patient.identifier] = {
                 nextAppointment: patient.nextAppointment,
                 userName: patient.given + patient.family,
                 identity: patient.identifier,
@@ -36,56 +42,10 @@ async function createTask() {
                 birthDate: patient.birthDate
             }
 
-            //getting patients should be it's own function
-            const data = {
-                "resourceType": "Patient",
-                "meta": {
-                    "tag": [
-                        {
-                            "system": "https://d-tree.org",
-                            "code": "client-already-on-art"
-                        }
-                    ]
-                },
-                "identifier": [
-                    {
-                        "value": patient.identifier,
-                        "use": "official"
-                    }
-                ],
+            //populating the patient resource
+           data = createPatient(patient.identifier,patient.family,patient.given,patient.telecom, patient.gender, patient.birthDate, patient.city, patient.district)
 
-                "active": true,
-                "name": [
-                    {
-                        "use": "official",
-                        "family": patient.family,
-                        "given": patient.given
-                    }
-                ],
-                "telecom": [{
-                    "system": "phone",
-                    "value": patient.telecom,
-                    "use": "home"
-                }],
-                "gender": patient.gender.toLowerCase(),
-                "birthDate": patient.birthDate,
-                "address": [{
-                    "use": "home",
-                    "type": "physical",
-                    "city": patient.city,
-                    "district": patient.district,
-                    "country": "Malawi"
-                }],
-                "managingOrganization": {
-                    "reference": "Organization/10173"  //will need to be parameters for the function
-                },
-                "generalPractitioner": [{
-                    "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec" //will need to be parameters for the function
-                }]
-
-            };
-
-            //different function till theyre sent
+           //adding the necessary request method and URL for Patient resource.
             patients.push({
                 resource: data, "request": {
                     "method": "POST",
@@ -93,580 +53,128 @@ async function createTask() {
                 }
             });
         });
-        fs.writeFileSync(path.join(__dirname, "./assets/generated/output.json"), JSON.stringify(patients))
-        const patientData = {
-            "resourceType": "Bundle",
-            "type": "transaction",
-            "entry": [
-                ...patients
-            ]
-        }
-        try {
-            const responsePatient = await axios.post(process.env.FHIR_BASEURL, patientData, {
-                headers: {
-                    "Authorization": `${auth.token_type} ${auth.access_token}`,
-                    "Content-Type": "application/json"
-                }
 
-            });  
+        //writing to a file all the patients created to be sent to the server for verification purposes
+        fs.writeFileSync(path.join(__dirname, "./assets/generated/output.json"), JSON.stringify(patients))
+        
+        //putting all the patients in a Bundle Resource to be sent to the server in bulk.
+        const patientData = constructBundle(patients)
+
+
+        try {
+            //sending the created Bundle resource to the server and saving the response in responsePatient
+            const responsePatient = await networkCall(patientData,auth)
+            
             console.log(auth.token_type)
             console.log(responsePatient.data);
-            //function ends here
 
+            //looping through the saved Bundle response to to get "Location" of Patients and populating the locations in a Bundle to send to the server to get full client details
+            const patientDataRequest = getBundleResourceIds(responsePatient)
 
-            //another funtion with comments for explanation
-            const patientDataRequest = {
-                "resourceType": "Bundle",
-                "type": "transaction",
-                "entry": responsePatient.data.entry.map(x => ({
-                    "request": {
-                        "method": "GET",
-                        "url": x.response.location
-                    }
-                }))
-            }
             console.log(patientDataRequest)
-               
 
-
-            const patientBundleResponse = await axios.post(process.env.FHIR_BASEURL, patientDataRequest, {
-                headers: {
-                    "Authorization": `${auth.token_type} ${auth.access_token}`,
-                    "Content-Type": "application/json"
-                }
-            });
+            //sending the saved Bundle response with the client locations to the server and saving the response in patientBundleResponse
+            const patientBundleResponse = await networkCall(patientDataRequest,auth)
             console.log((patientBundleResponse).data);
-             //funtion ends here
 
 
             const userIDs = {}
+
+            //looping through the PatientBundle Response to get specific information and adding it to the clientDetails which already had some client detials from the first loop
             patientBundleResponse.data.entry.forEach(id => {
-                const userData = userNextAppointments[id.resource.identifier[0].value]
+                const userData = clientDetails[id.resource.identifier[0].value]
                 bundleData = {
                     ...userData,
                     artNumber: id.resource.identifier[0].value,
                     userName: id.resource.name[0].given + " " + id.resource.name[0].family,
                     userId: id.resource.id
                 }
-                userNextAppointments[id.resource.identifier[0].value] = bundleData;
+                clientDetails[id.resource.identifier[0].value] = bundleData;
             });
 
             const tasks = [];
             let dateNow = new Date();
             let today = dayjs(Date.now())
             let dateEnd = today.add(14, "day").format();
-            Object.keys(userNextAppointments).forEach(patientid => {
 
-                const details = userNextAppointments[patientid]
+            //looping through clientDetails to get each client's information and populating Tasks with that information.
+            Object.keys(clientDetails).forEach(patientid => {
 
-                //create task function with parameters
-                const tbCovid = {
-                    "resourceType": "Task",
-                    "meta": {
-                        "tag": [
-                            {
-                                "system": "https://d-tree.org",
-                                "code": "clinic-visit-task-order-1"
-                            }
-                        ]
-                    },
-                    "identifier": [
-                        {
-                            "use": "official",
-                            "value": Math.random().toString(36).substring(2, 9)
-                        }
-                    ],
-                    "status": "ready",
-                    "intent": "plan",
-                    "priority": "routine",
-                    "description": "TB/COVID Screening",
-                    "for": {
-                        "reference": "Patient/" + details.userId,
-                        "display": details.userName
-                    },
-                    "executionPeriod": {
-                        "start": dateNow.toISOString(),
-                        "end": details.nextAppointment
-                    },
-                    "authoredOn": dateNow.toISOString(),
-                    "requester": {
-                        "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                        "display": "Test CHW"
-                    },
-                    "owner": {
-                        "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                        "display": "Test CHW"
-                    },
-                    "reasonReference": {
-                        "reference": "Questionnaire/patient-tb-covid",
-                        "display": "TB/COVID Screening"
-                    }
-                };
+                const details = clientDetails[patientid]
+                
+                const tbCovid = createTasks("TB/COVID Screening",details.userId, details.userName,details.nextAppointment)
 
-                const demographicUpdates = {
-                    "resourceType": "Task",
-                    "meta": {
-                        "tag": [
-                            {
-                                "system": "https://d-tree.org",
-                                "code": "guardian-visit"
-                            },
-                            {
-                                "system": "https://d-tree.org",
-                                "code": "clinic-visit-task-order-2"
-                            }
-                        ]
-                    },
-                    "identifier": [
-                        {
-                            "use": "official",
-                            "value": Math.random().toString(36).substring(2, 9)
-                        }
-                    ],
-                    "status": "ready",
-                    "intent": "plan",
-                    "priority": "routine",
-                    "description": "Demographic Updates",
-                    "for": {
-                        "reference": "Patient/" + details.userId,
-                        "display": details.userName
-                    },
-                    "executionPeriod": {
-                        "start": dateNow.toISOString(),
-                        "end": details.nextAppointment
-                    },
-                    "authoredOn": dateNow.toISOString(),
-                    "requester": {
-                        "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                        "display": "Test CHW"
-                    },
-                    "owner": {
-                        "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                        "display": "Test CHW"
-                    },
-                    "reasonReference": {
-                        "reference": "Questionnaire/patient-demographic-updates",
-                        "display": "Demographic Updates"
-                    }
-                };
+                const demographicUpdates = createTasks("Demographic Updates",details.userId, details.userName,details.nextAppointment)
 
-                const guardianUpdates = {
-                    "resourceType": "Task",
-                    "meta": {
-                        "tag": [
-                            {
-                                "system": "https://d-tree.org",
-                                "code": "guardian-visit"
-                            },
-                            {
-                                "system": "https://d-tree.org",
-                                "code": "clinic-visit-task-order-3"
-                            }
-                        ]
-                    },
-                    "identifier": [
-                        {
-                            "use": "official",
-                            "value": Math.random().toString(36).substring(2, 9)
-                        }
-                    ],
-                    "status": "ready",
-                    "intent": "plan",
-                    "priority": "routine",
-                    "description": "Guardian Updates",
-                    "for": {
-                        "reference": "Patient/" + details.userId,
-                        "display": details.userName
-                    },
-                    "executionPeriod": {
-                        "start": dateNow.toISOString(),
-                        "end": details.nextAppointment
-                    },
-                    "authoredOn": dateNow.toISOString(),
-                    "requester": {
-                        "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                        "display": "Test CHW"
-                    },
-                    "owner": {
-                        "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                        "display": "Test CHW"
-                    },
-                    "reasonReference": {
-                        "reference": "Questionnaire/patient-guardian-updates-0-to-15-years",
-                        "display": "Guardian Updates"
-                    }
-                };
+                const guardianUpdates = createTasks("Guardian Updates",details.userId, details.userName,details.nextAppointment)
 
-                const vitals = {
-                    "resourceType": "Task",
-                    "meta": {
-                        "tag": [
-                            {
-                                "system": "https://d-tree.org",
-                                "code": "clinic-visit-task-order-4"
-                            }
-                        ]
-                    },
-                    "identifier": [
-                        {
-                            "use": "official",
-                            "value": Math.random().toString(36).substring(2, 9)
-                        }
-                    ],
-                    "status": "ready",
-                    "intent": "plan",
-                    "priority": "routine",
-                    "description": "Vitals",
-                    "for": {
-                        "reference": "Patient/" + details.userId,
-                        "display": details.userName
-                    },
-                    "executionPeriod": {
-                        "start": dateNow.toISOString(),
-                        "end": details.nextAppointment
-                    },
-                    "authoredOn": dateNow.toISOString(),
-                    "requester": {
-                        "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                        "display": "Test CHW"
-                    },
-                    "owner": {
-                        "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                        "display": "Test CHW"
-                    },
-                    "reasonReference": {
-                        "reference": "Questionnaire/art-client-vitals-male-15-years-plus",
-                        "display": "Vitals"
-                    }
-                };
+                const vitals = createTasks("Vitals",details.userId, details.userName,details.nextAppointment)
 
-                const womenHealth = {
-                    "resourceType": "Task",
-                    "meta": {
-                        "tag": [
-                            {
-                                "system": "https://d-tree.org",
-                                "code": "clinic-visit-task-order-5"
-                            }
-                        ]
-                    },
-                    "identifier": [
-                        {
-                            "use": "official",
-                            "value": Math.random().toString(36).substring(2, 9)
-                        }
-                    ],
-                    "status": "ready",
-                    "intent": "plan",
-                    "priority": "routine",
-                    "description": "Women's Health Screening",
-                    "for": {
-                        "reference": "Patient/" + details.userId,
-                        "display": details.userName
-                    },
-                    "executionPeriod": {
-                        "start": dateNow.toISOString(),
-                        "end": details.nextAppointment
-                    },
-                    "authoredOn": dateNow.toISOString(),
-                    "requester": {
-                        "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                        "display": "Test CHW"
-                    },
-                    "owner": {
-                        "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                        "display": "Test CHW"
-                    },
-                    "reasonReference": {
-                        "reference": "Questionnaire/art-client-womens-health-screening-female-9-years-plus",
-                        "display": "Women's Health Screening"
-                    }
-                };
+                const womenHealth = createTasks("Women's Health Screening",details.userId, details.userName,details.nextAppointment)
 
-                const clinicalReg = {
-                    "resourceType": "Task",
-                    "meta": {
-                        "tag": [
-                            {
-                                "system": "https://d-tree.org",
-                                "code": "clinic-visit-task-order-6"
-                            }
-                        ]
-                    },
-                    "identifier": [
-                        {
-                            "use": "official",
-                            "value": Math.random().toString(36).substring(2, 9)
-                        }
-                    ],
-                    "status": "ready",
-                    "intent": "plan",
-                    "priority": "routine",
-                    "description": "Clinical Registration",
-                    "for": {
-                        "reference": "Patient/" + details.userId,
-                        "display": details.userName
-                    },
-                    "executionPeriod": {
-                        "start": dateNow.toISOString(),
-                        "end": details.nextAppointment
-                    },
-                    "authoredOn": dateNow.toISOString(),
-                    "requester": {
-                        "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                        "display": "Test CHW"
-                    },
-                    "owner": {
-                        "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                        "display": "Test CHW"
-                    },
-                    "reasonReference": {
-                        "reference": "Questionnaire/art-client-clinical-registration",
-                        "display": "Clinical Registration"
-                    }
-                };
+                const clinicalReg = createTasks("Clinical Registration",details.userId, details.userName,details.nextAppointment)
 
-                const nextAppointment = {
-                    "resourceType": "Task",
-                    "meta": {
-                        "tag": [
-                            {
-                                "system": "https://d-tree.org",
-                                "code": "guardian-visit"
-                            },
-                            {
-                                "system": "https://d-tree.org",
-                                "code": "clinic-visit-task-order-7"
-                            }
-                        ]
-                    },
-                    "identifier": [
-                        {
-                            "use": "official",
-                            "value": Math.random().toString(36).substring(2, 9)
-                        }
-                    ],
-                    "status": "ready",
-                    "intent": "plan",
-                    "priority": "routine",
-                    "description": "TB History, Regimen and Next Appointment",
-                    "for": {
-                        "reference": "Patient/" + details.userId,
-                        "display": details.userName
-                    },
-                    "executionPeriod": {
-                        "start": dateNow.toISOString(),
-                        "end": details.nextAppointment
-                    },
-                    "authoredOn": dateNow.toISOString(),
-                    "requester": {
-                        "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                        "display": "Test CHW"
-                    },
-                    "owner": {
-                        "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                        "display": "Test CHW"
-                    },
-                    "reasonReference": {
-                        "reference": "Questionnaire/art-client-tb-history-regimen-and-next-appointment-routine",
-                        "display": "TB History, Regimen and Next Appointment"
-                    }
-                };
+                const nextAppointment = createTasks("TB History, Regimen and Next Appointment",details.userId, details.userName,details.nextAppointment)
 
                 const currentDate = dayjs(Date.now())
                 const dateThen = dayjs(details.birthDate)
                 let yearsDiff = currentDate.diff(dateThen, 'year')
                 let monthsDiff = currentDate.diff(dateThen, 'month')
-                let addWomenHealth = tasks.push({
-                    resource: womenHealth, "request": {
-                        "method": "POST",
-                        "url": "Task/"
-                    }
-                });
 
-                //it's own file and have screening for different tasks
-                if (details.gender === "female") {
+                //screening tasks by age and gender to get the correct next appointment tasks/questionnaires
+                performScreening(details.gender,details.birthDate, tasks,  guardianUpdates, vitals, womenHealth  )
 
 
-                    if (monthsDiff < 6) {
-
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-female-0-to-6-months"
-
-                    } else if (monthsDiff >= 6 && yearsDiff < 5) {
-
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-6-months-to-5-years"
-
-                    }
-                    else if (yearsDiff < 9 && yearsDiff >= 5) {
-
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-5-to-13-years"
-
-                    } else if (yearsDiff < 13 && yearsDiff >= 9) {
-                        womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-9-to-14-years"
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-5-to-13-years"
-                        addWomenHealth
-
-                    } else if (yearsDiff < 14 && yearsDiff >= 13) {
-                        womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-9-to-14-years"
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-13-to-15-years"
-                        addWomenHealth
-
-                    } else if (yearsDiff < 15 && yearsDiff >= 14) {
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-13-to-15-years"
-                        addWomenHealth
-
-                    } else if (yearsDiff < 25 && yearsDiff >= 15) {
-
-                        womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-15-to-25-years"
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-female-15-to-30-years"
-                        guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
-                        addWomenHealth
-
-                    } else if (yearsDiff < 30 && yearsDiff >= 25) {
-                        womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-25-years-plus"
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-female-15-to-30-years"
-                        guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
-                        addWomenHealth
-
-                    } else if (yearsDiff < 40 && yearsDiff >= 30) {
-                        womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-25-years-plus"
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-female-30-to-40-years"
-                        guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
-                        addWomenHealth
-
-                    } else if (yearsDiff >= 40) {
-                        womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-25-years-plus"
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-female-40-years-plus"
-                        guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
-                        addWomenHealth
-                    }
-
-
-                } else {
-
-                    if (monthsDiff < 6) {
-
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-male-0-to-6-months"
-
-                    } else if (monthsDiff >= 6 && yearsDiff < 5) {
-
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-6-months-to-5-years"
-
-                    }
-                    else if (yearsDiff < 13 && yearsDiff >= 5) {
-
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-5-to-13-years"
-
-                    } else if (yearsDiff < 15 && yearsDiff >= 13) {
-
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-13-to-15-years"
-
-                    } else if (yearsDiff < 30 && yearsDiff >= 15) {
-
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-male-15-to-30-years"
-                        guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
-
-                    } else if (yearsDiff < 40 && yearsDiff >= 30) {
-
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-male-30-to-40-years"
-                        guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
-
-                    } else if (yearsDiff >= 40) {
-
-                        vitals.reasonReference.reference = "Questionnaire/art-client-vitals-male-40-years-plus"
-                        guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
-                    }
-
+                const taskMethod = {
+                    "method": "POST",
+                    "url": "Task/"
                 }
-
-
-
-            //find a way to make it a function    
                 tasks.push(
                     {
-                        resource: demographicUpdates, "request": {
-                            "method": "POST",
-                            "url": "Task/"
-                        }
+                        resource: demographicUpdates, "request": taskMethod
                     },
                     {
-                        resource: guardianUpdates, "request": {
-                            "method": "POST",
-                            "url": "Task/"
-                        }
+                        resource: guardianUpdates, "request": taskMethod
                     },
                     {
-                        resource: tbCovid, "request": {
-                            "method": "POST",
-                            "url": "Task/"
-                        }
-                    },
-
-                    {
-                        resource: clinicalReg, "request": {
-                            "method": "POST",
-                            "url": "Task/"
-                        }
+                        resource: tbCovid, "request": taskMethod
                     },
                     {
-                        resource: vitals, "request": {
-                            "method": "POST",
-                            "url": "Task/"
-                        }
+                        resource: clinicalReg, "request": taskMethod
                     },
                     {
-                        resource: nextAppointment, "request": {
-                            "method": "POST",
-                            "url": "Task/"
-                        }
+                        resource: vitals, "request": taskMethod
+                    },
+                    {
+                        resource: nextAppointment, "request": taskMethod
                     }
 
                 );
             });
-            const constructedData = {
-                "resourceType": "Bundle",
-                "type": "transaction",
-                "entry": [
-                    ...tasks
-                ]
-            }
 
 
-            const response = await axios.post(process.env.FHIR_BASEURL, constructedData, {
-                headers: {
-                    "Authorization": `${auth.token_type} ${auth.access_token}`,
-                    "Content-Type": "application/json"
-                }
-            });
-            console.log(response.data);
+            //putting all the client tasks in a Bundle to be sent to the server in bulk
+            const constructedData = constructBundle(tasks)
 
-            const taskDataRequest = {
-                "resourceType": "Bundle",
-                "type": "transaction",
-                "entry": response.data.entry.map(x => ({
-                    "request": {
-                        "method": "GET",
-                        "url": x.response.location
-                    }
-                }))
-            }
+            //sendig the tasks Bundle to the server and saving the response as taskBundleResponse
+            const taskBundleResponse = await networkCall(constructedData,auth)
+            console.log(taskBundleResponse.data.entry);
 
+
+            //looping through the saved tasks Bundle response to to get "Location" of tasks and populating the locations in a Bundle to send to the server to get full client details
+            const taskDataRequest = getBundleResourceIds(taskBundleResponse)
             console.log(taskDataRequest)
 
 
+            //sending the saved Bundle response with the task locations to the server and saving the response as bundleResponse
+            const fullTaskResponse = await networkCall(taskDataRequest,auth)
+            console.log((fullTaskResponse).data);
 
-            const bundleResponse = await axios.post(process.env.FHIR_BASEURL, taskDataRequest, {
-                headers: {
-                    "Authorization": `${auth.token_type} ${auth.access_token}`,
-                    "Content-Type": "application/json"
-                }
-            });
-            console.log((bundleResponse).data);
-
-
-            //needs some explanations
+            //creating an object of usertasks
             const userTasks = {}
-            bundleResponse.data.entry.forEach(task => {
+
+            //looping through the saved full task response with all the task details and populating userTasks with the key being the clientID and the value being the client's tasks 
+            fullTaskResponse.data.entry.forEach(task => {
                 const user = userTasks[task.resource.for.reference.split("/")[1]]
                 const newUserTask = {
                     taskId: task.resource.id,
@@ -683,248 +191,23 @@ async function createTask() {
                 }
             });
 
-
+            //creating task models to be using in carePlan "Activity"
             const taskModel = {
-
-
-                //create a function with parameters for what changes
-                "TB/COVID Screening": {
-                    "outcomeReference": [
-                        {
-                            "reference": "",
-                            "display": "TB/COVID Screening"
-                        }
-                    ],
-                    "detail": {
-                        "kind": "Task",
-                        "code": {
-                            "coding": [
-                                {
-                                    "system": "https://d-tree.org",
-                                    "code": "client-tb-covid-screening",
-                                    "display": "TB/COVID Screening"
-                                }
-                            ],
-                            "text": "TB/COVID Screening"
-                        },
-                        "status": "in-progress",
-                        "scheduledPeriod": {
-                            "start": dateNow.toISOString(),
-                            "end": ""
-                        },
-                        "performer": [
-                            {
-                                "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                                "display": "Test CHW"
-                            }
-                        ],
-                        "description": "TB/COVID Screening"
-                    }
-                },
-                "Demographic Updates": {
-                    "outcomeReference": [
-                        {
-                            "reference": "",
-                            "display": "Demographic Updates"
-                        }
-                    ],
-                    "detail": {
-                        "kind": "Task",
-                        "code": {
-                            "coding": [
-                                {
-                                    "system": "https://d-tree.org",
-                                    "code": "patient-demographic-updates",
-                                    "display": "Demographic Updates"
-                                }
-                            ],
-                            "text": "Demographic Updates"
-                        },
-                        "status": "in-progress",
-                        "scheduledPeriod": {
-                            "start": dateNow.toISOString(),
-                            "end": ""
-                        },
-                        "performer": [
-                            {
-                                "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                                "display": "Test CHW"
-                            }
-                        ],
-                        "description": "Demographic Updates"
-                    }
-                },
-                "Guardian Updates": {
-                    "outcomeReference": [
-                        {
-                            "reference": "",
-                            "display": "Guardian Updates"
-                        }
-                    ],
-                    "detail": {
-                        "kind": "Task",
-                        "code": {
-                            "coding": [
-                                {
-                                    "system": "https://d-tree.org",
-                                    "code": "patient-guardian-updates",
-                                    "display": "Guardian Updates"
-                                }
-                            ],
-                            "text": "Guardian Updates"
-                        },
-                        "status": "in-progress",
-                        "scheduledPeriod": {
-                            "start": dateNow.toISOString(),
-                            "end": ""
-                        },
-                        "performer": [
-                            {
-                                "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                                "display": "Test CHW"
-                            }
-                        ],
-                        "description": "Guardian Updates"
-                    }
-                },
-                "Vitals": {
-                    "outcomeReference": [
-                        {
-                            "reference": "",
-                            "display": "Vitals"
-                        }
-                    ],
-                    "detail": {
-                        "kind": "Task",
-                        "code": {
-                            "coding": [
-                                {
-                                    "system": "https://d-tree.org",
-                                    "code": "client-vitals",
-                                    "display": "Vitals"
-                                }
-                            ],
-                            "text": "Vitals"
-                        },
-                        "status": "in-progress",
-                        "scheduledPeriod": {
-                            "start": dateNow.toISOString(),
-                            "end": ""
-                        },
-                        "performer": [
-                            {
-                                "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                                "display": "Test CHW"
-                            }
-                        ],
-                        "description": "Vitals"
-                    }
-                },
-                "Clinical Registration": {
-                    "outcomeReference": [
-                        {
-                            "reference": "",
-                            "display": "Clinical Registration"
-                        }
-                    ],
-                    "detail": {
-                        "kind": "Task",
-                        "code": {
-                            "coding": [
-                                {
-                                    "system": "https://d-tree.org",
-                                    "code": "art-client-clinical-registration",
-                                    "display": "Clinical Registration"
-                                }
-                            ],
-                            "text": "Clinical Registration"
-                        },
-                        "status": "in-progress",
-                        "scheduledPeriod": {
-                            "start": dateNow.toISOString(),
-                            "end": ""
-                        },
-                        "performer": [
-                            {
-                                "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                                "display": "Test CHW"
-                            }
-                        ],
-                        "description": "Clinical Registration"
-                    }
-                },
-                "TB History, Regimen and Next Appointment": {
-                    "outcomeReference": [
-                        {
-                            "reference": "",
-                            "display": "TB History, Regimen and Next Appointment"
-                        }
-                    ],
-                    "detail": {
-                        "kind": "Task",
-                        "code": {
-                            "coding": [
-                                {
-                                    "system": "https://d-tree.org",
-                                    "code": "client-tb-history-regimen-and-next-appointment",
-                                    "display": "TB History, Regimen and Next Appointment"
-                                }
-                            ],
-                            "text": "TB History, Regimen and Next Appointment"
-                        },
-                        "status": "in-progress",
-                        "scheduledPeriod": {
-                            "start": dateNow.toISOString(),
-                            "end": ""
-                        },
-                        "performer": [
-                            {
-                                "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                                "display": "Test CHW"
-                            }
-                        ],
-                        "description": "TB History, Regimen and Next Appointment"
-                    }
-                },
-                "Women's Health Screening": {
-                    "outcomeReference": [
-                        {
-                            "reference": "",
-                            "display": "Women's Health Screening"
-                        }
-                    ],
-                    "detail": {
-                        "kind": "Task",
-                        "code": {
-                            "coding": [
-                                {
-                                    "system": "https://d-tree.org",
-                                    "code": "client-womens-health-screening",
-                                    "display": "Women's Health Screening"
-                                }
-                            ],
-                            "text": "TB/COVID Screening"
-                        },
-                        "status": "in-progress",
-                        "scheduledPeriod": {
-                            "start": dateNow.toISOString(),
-                            "end": ""
-                        },
-                        "performer": [
-                            {
-                                "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec",
-                                "display": "Test CHW"
-                            }
-                        ],
-                        "description": "Women's Health Screening"
-                    }
-                }
+                "TB/COVID Screening": createTaskModel("TB/COVID Screening"),
+                "Demographic Updates": createTaskModel("Demographic Updates"),
+                "Guardian Updates": createTaskModel("Guardian Updates"),
+                "Vitals": createTaskModel("Vitals"),
+                "Clinical Registration": createTaskModel("Clinical Registration"),
+                "TB History, Regimen and Next Appointment": createTaskModel("TB History, Regimen and Next Appointment"),
+                "Women's Health Screening": createTaskModel("Women's Health Screening")
 
             };
 
 
-            //use uuid() not random. Have separate files for each resource. aggregate in one main file
+            //creating client CarePlans
             const CarePlans = []
+
+            //looping through the populated userTasks to create carePlans. Each key/clientID will have a carePlan and the value/tasks being populated in Activity Array
             Object.keys(userTasks).forEach(patientid => {
                 const tasks = userTasks[patientid]
                 CarePlans.push({
@@ -968,24 +251,12 @@ async function createTask() {
                 })
             });
 
+            //putting careplans in a Bundle
+            const constructedCarePlan = constructBundle(CarePlans)
 
-            const constructedCarePlan = {
-                "resourceType": "Bundle",
-                "type": "transaction",
-                "entry": [
-                    ...CarePlans
-                ]
-            }
-
-            const carePlanResponse = await axios.post(process.env.FHIR_BASEURL, constructedCarePlan, {
-                headers: {
-                    "Authorization": `${auth.token_type} ${auth.access_token}`,
-                    "Content-Type": "application/json"
-                }
-            });
+            //sending careplans Bundle to server and saving response as carePlanResponse
+            const carePlanResponse = await networkCall(constructedCarePlan,auth)
             console.log((carePlanResponse).data);
-
-
 
 
 
@@ -999,7 +270,6 @@ async function createTask() {
 }
 
 
-
-createTask();
+main();
 
 
