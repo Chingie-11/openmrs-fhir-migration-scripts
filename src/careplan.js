@@ -7,7 +7,7 @@ const oauth = require('axios-oauth-client');
 const util = require("util")
 const dayjs = require('dayjs')
 
-let tasks = {};
+
 
 async function createTask() {
     const getAuthorizationCode = oauth.client(axios.create(), {
@@ -18,12 +18,12 @@ async function createTask() {
         username: process.env.FHIR_USERNAME,
         password: process.env.FHIR_PASSWORD,
         scope: process.env.FHIR_SCROPE
-    });
+    });     //moved to separte file
 
 
     const auth = await getAuthorizationCode();
     console.log(auth);
-    csv().fromFile(path.join(__dirname, "./assets/csv/minidump.csv")).then(async (json) => {
+    csv().fromFile(path.join(__dirname, "./assets/csv/minidump.csv")).then(async (json) => {  //await consistency
         const patients = [];
         const userNextAppointments = {}
         json.forEach(patient => {
@@ -36,7 +36,7 @@ async function createTask() {
                 birthDate: patient.birthDate
             }
 
-
+            //getting patients should be it's own function
             const data = {
                 "resourceType": "Patient",
                 "meta": {
@@ -77,19 +77,15 @@ async function createTask() {
                     "country": "Malawi"
                 }],
                 "managingOrganization": {
-                    "reference": "Organization/10173"
+                    "reference": "Organization/10173"  //will need to be parameters for the function
                 },
                 "generalPractitioner": [{
-                    "reference": "",
-                    "type": "Practitioner",
-                    "identifier": {
-                        "use": "official",
-                        "value": "chwtrial123"
-                    }
+                    "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec" //will need to be parameters for the function
                 }]
 
             };
 
+            //different function till theyre sent
             patients.push({
                 resource: data, "request": {
                     "method": "POST",
@@ -112,11 +108,13 @@ async function createTask() {
                     "Content-Type": "application/json"
                 }
 
-            });
+            });  
             console.log(auth.token_type)
             console.log(responsePatient.data);
+            //function ends here
 
 
+            //another funtion with comments for explanation
             const patientDataRequest = {
                 "resourceType": "Bundle",
                 "type": "transaction",
@@ -127,8 +125,8 @@ async function createTask() {
                     }
                 }))
             }
-
             console.log(patientDataRequest)
+               
 
 
             const patientBundleResponse = await axios.post(process.env.FHIR_BASEURL, patientDataRequest, {
@@ -138,6 +136,7 @@ async function createTask() {
                 }
             });
             console.log((patientBundleResponse).data);
+             //funtion ends here
 
 
             const userIDs = {}
@@ -160,6 +159,7 @@ async function createTask() {
 
                 const details = userNextAppointments[patientid]
 
+                //create task function with parameters
                 const tbCovid = {
                     "resourceType": "Task",
                     "meta": {
@@ -484,7 +484,8 @@ async function createTask() {
                     }
                 });
 
-                if (details.gender !== "male") {
+                //it's own file and have screening for different tasks
+                if (details.gender === "female") {
 
 
                     if (monthsDiff < 6) {
@@ -526,7 +527,7 @@ async function createTask() {
                         vitals.reasonReference.reference = "Questionnaire/art-client-vitals-female-15-to-30-years"
                         guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
                         addWomenHealth
-                        
+
                     } else if (yearsDiff < 40 && yearsDiff >= 30) {
                         womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-25-years-plus"
                         vitals.reasonReference.reference = "Questionnaire/art-client-vitals-female-30-to-40-years"
@@ -539,7 +540,7 @@ async function createTask() {
                         guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
                         addWomenHealth
                     }
-                  
+
 
                 } else {
 
@@ -580,11 +581,7 @@ async function createTask() {
 
 
 
-
-
-
-
-
+            //find a way to make it a function    
                 tasks.push(
                     {
                         resource: demographicUpdates, "request": {
@@ -667,6 +664,7 @@ async function createTask() {
             console.log((bundleResponse).data);
 
 
+            //needs some explanations
             const userTasks = {}
             bundleResponse.data.entry.forEach(task => {
                 const user = userTasks[task.resource.for.reference.split("/")[1]]
@@ -689,6 +687,7 @@ async function createTask() {
             const taskModel = {
 
 
+                //create a function with parameters for what changes
                 "TB/COVID Screening": {
                     "outcomeReference": [
                         {
@@ -923,6 +922,8 @@ async function createTask() {
 
             };
 
+
+            //use uuid() not random. Have separate files for each resource. aggregate in one main file
             const CarePlans = []
             Object.keys(userTasks).forEach(patientid => {
                 const tasks = userTasks[patientid]
