@@ -1,5 +1,6 @@
 
 module.exports = function createTaskModel(taskName) {
+    let dateNow = new Date();
     let taskModel = {
         "outcomeReference": [
             {

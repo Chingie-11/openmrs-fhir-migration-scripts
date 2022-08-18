@@ -1,6 +1,6 @@
+const dayjs = require('dayjs')
 
-
-module.exports = function performScreening(gender, birthDate){
+module.exports = function performScreening(gender, birthDate, tasks, guardianUpdates, vitals, womenHealth ){
 
     const currentDate = dayjs(Date.now())
                 const dateThen = dayjs(birthDate)

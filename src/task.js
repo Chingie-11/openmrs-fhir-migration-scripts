@@ -1,4 +1,6 @@
+
 module.exports = function createTasks(taskName, userId, userName, nextAppointment) {
+    let dateNow = new Date();
     const task = {
         "resourceType": "Task",
         "meta": {

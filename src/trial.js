@@ -7,8 +7,6 @@ const oauth = require('axios-oauth-client');
 const util = require("util")
 const dayjs = require('dayjs')
 
-
-
 const getAuthCode = require ("./network.js")
 const getBundleResourceIds = require ("./bundleDetails")
 const performScreening = require ("./screening")
@@ -20,9 +18,22 @@ const createPatient = require ("./patientResource")
 
 
 async function main() {
-    
+  
+    const getAuthorizationCode = oauth.client(axios.create(), {
+        url: process.env.FHIR_TOKEN_URL,
+        grant_type: process.env.FHIR_GRANT,
+        client_id: process.env.FHIR_CLIENT_ID,
+        client_secret: process.env.FHIR_SECRET,
+        username: process.env.FHIR_USERNAME,
+        password: process.env.FHIR_PASSWORD,
+        scope: process.env.FHIR_SCROPE
+    });
+
+
+
+
     //Authentication information 
-    const auth = await getAuthCode;
+    const auth = await getAuthorizationCode();
 
     console.log(auth);
 
@@ -63,7 +74,7 @@ async function main() {
 
         try {
             //sending the created Bundle resource to the server and saving the response in responsePatient
-            const responsePatient = networkCall(patientData,auth)
+            const responsePatient = await networkCall(patientData,auth)
             
             console.log(auth.token_type)
             console.log(responsePatient.data);
@@ -74,7 +85,7 @@ async function main() {
             console.log(patientDataRequest)
 
             //sending the saved Bundle response with the client locations to the server and saving the response in patientBundleResponse
-            const patientBundleResponse = networkCall(patientDataRequest)
+            const patientBundleResponse = await networkCall(patientDataRequest,auth)
             console.log((patientBundleResponse).data);
 
 
@@ -122,7 +133,7 @@ async function main() {
                 let monthsDiff = currentDate.diff(dateThen, 'month')
 
                 //screening tasks by age and gender to get the correct next appointment tasks/questionnaires
-                performScreening(details.gender,details.birthDate)
+                performScreening(details.gender,details.birthDate, tasks,  guardianUpdates, vitals, womenHealth  )
 
 
                 const taskMethod = {
@@ -157,8 +168,8 @@ async function main() {
             const constructedData = constructBundle(tasks)
 
             //sendig the tasks Bundle to the server and saving the response as taskBundleResponse
-            const taskBundleResponse = networkCall(constructedData)
-            console.log(taskBundleResponse.data);
+            const taskBundleResponse = await networkCall(constructedData,auth)
+            console.log(taskBundleResponse.data.entry);
 
 
             //looping through the saved tasks Bundle response to to get "Location" of tasks and populating the locations in a Bundle to send to the server to get full client details
@@ -167,7 +178,7 @@ async function main() {
 
 
             //sending the saved Bundle response with the task locations to the server and saving the response as bundleResponse
-            const fullTaskResponse =networkCall(taskDataRequest)
+            const fullTaskResponse = await networkCall(taskDataRequest,auth)
             console.log((fullTaskResponse).data);
 
             //creating an object of usertasks
@@ -255,7 +266,7 @@ async function main() {
             const constructedCarePlan = constructBundle(CarePlans)
 
             //sending careplans Bundle to server and saving response as carePlanResponse
-            const carePlanResponse = networkCall(constructedCarePlan)
+            const carePlanResponse = await networkCall(constructedCarePlan,auth)
             console.log((carePlanResponse).data);
 
 

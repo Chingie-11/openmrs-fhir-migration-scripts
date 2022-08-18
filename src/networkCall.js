@@ -1,6 +1,4 @@
 const axios = require("axios").default;
-const oauth = require('axios-oauth-client');
-const getAuthCode = require ("./network.js")
 module.exports = async function networkCall(data, auth) {
 
     
