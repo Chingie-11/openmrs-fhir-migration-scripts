@@ -1,10 +1,10 @@
 
-module.exports = function createTaskModel(taskName) {
+module.exports = function createActivityDetail(taskName) {
     let dateNow = new Date();
     let taskModel = {
         "outcomeReference": [
             {
-                "reference": "",
+                "refere3nce": "",
                 "display": "TB/COVID Screening"
             }
         ],

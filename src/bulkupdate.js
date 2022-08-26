@@ -6,6 +6,8 @@ const axios = require("axios").default;
 const oauth = require('axios-oauth-client');
 const util = require("util")
 
+const createPatient = require ("./resources/patientResource")
+
 async function main() {
     const getAuthorizationCode = oauth.client(axios.create(), {
         url: process.env.FHIR_TOKEN_URL,
@@ -21,45 +23,7 @@ async function main() {
     csv().fromFile(path.join(__dirname, "./assets/csv/minidump.csv")).then(async (json) => {
         const patients = [];
         json.forEach(patient => {
-            const data = {
-                "resourceType": "Patient",
-                "meta": {
-                    "tag": [
-                        {
-                            "system": "https://d-tree.org",
-                            "code": "patient-client"
-                        }
-                    ]
-                },
-                "identifier": [
-                    {
-                        "value": patient.identifier
-                    }
-                ],
-                "active": true,
-                "name": [
-                    {
-                        "use": "official",
-                        "family": patient.family,
-                        "given": patient.given
-                    }
-                ],
-                "telecom" : [{   "system" : "phone",
-                "value" : patient.telecom, 
-                "use" : "home" 
-              }],
-                "gender": patient.gender.toLowerCase(),
-                "birthDate": patient.birthDate,
-                "address" : [{   "use" : "home", 
-                "type" : "physical", 
-                "city" : patient.city,
-                "district" : patient.district, 
-                "country" : "Malawi"}],
-                "managingOrganization": {
-                    "reference": "Organization/10173"
-                }
-            
-            };
+            const data = createPatient(patient.identifier,patient.family,patient.given,patient.telecom, patient.gender, patient.birthDate, patient.city, patient.district)
 
             patients.push({
                 resource: data, "request": {

@@ -1,5 +1,6 @@
+const  { v4: uuidv4 } = require('uuid');
 
-module.exports = function createTasks(taskName, userId, userName, nextAppointment) {
+module.exports = function createTask(taskName, userId, userName, nextAppointment) {
     let dateNow = new Date();
     const task = {
         "resourceType": "Task",
@@ -14,7 +15,7 @@ module.exports = function createTasks(taskName, userId, userName, nextAppointmen
         "identifier": [
             {
                 "use": "official",
-                "value": Math.random().toString(36).substring(2, 9)
+                "value": uuidv4()
             }
         ],
         "status": "ready",

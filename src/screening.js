@@ -1,3 +1,4 @@
+//This funtion performs screening using gender and birthday to give the correct task and/or Questionnaire for each client.
 const dayjs = require('dayjs')
 
 module.exports = function performScreening(gender, birthDate, tasks, guardianUpdates, vitals, womenHealth ){

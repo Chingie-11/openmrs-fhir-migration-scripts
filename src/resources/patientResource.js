@@ -1,4 +1,4 @@
-
+//This function takes in parameters of a patient and returns a patient resource
 module.exports = function createPatient(identifier, family, given, telecom, gender, birthDate, city, district ){
     const data = {
         "resourceType": "Patient",

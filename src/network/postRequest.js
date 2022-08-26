@@ -1,5 +1,6 @@
+//This function takes in a Bundle and authentication info as pparameters and returns the Bundle response
 const axios = require("axios").default;
-module.exports = async function networkCall(data, auth) {
+module.exports = async function postRequest(data, auth) {
 
     
    return await axios.post(process.env.FHIR_BASEURL, data, {

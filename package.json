@@ -12,7 +12,8 @@
     "axios-oauth-client": "^1.4.4",
     "csvtojson": "^2.0.10",
     "dayjs": "^1.11.4",
-    "dotenv": "^11.0.0"
+    "dotenv": "^11.0.0",
+    "uuid": "^8.3.2"
   },
   "repository": {
     "type": "git",
@@ -22,5 +23,10 @@
     "url": "https://github.com/Chingie-11/openmrs-fhir-migration-scripts/issues"
   },
   "homepage": "https://github.com/Chingie-11/openmrs-fhir-migration-scripts#readme",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "eslint": "^8.22.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.26.0"
+  }
 }

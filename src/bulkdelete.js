@@ -26,7 +26,7 @@ async function main() {
             
            try {
             
-            const response = await axios.delete("https://fhir-dev.d-tree.org/fhir/Patient/" + element +"/",  {
+            const response = await axios.delete("https://fhir-dev.d-tree.org/fhir/Patient/?organization=10173/",  {
                 headers: {
                     "Authorization": `${auth.token_type} ${auth.access_token}`,
                     "Content-Type": "application/json"
