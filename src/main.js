@@ -2,20 +2,15 @@ require('dotenv').config()
 const csv = require('csvtojson');
 const path = require("path");
 const fs = require("fs");
-const axios = require("axios").default;
-const oauth = require('axios-oauth-client');
-const util = require("util")
-const dayjs = require('dayjs')
-
-const getAuthCode = require("./network.js")
-const getBundleResourceIds = require("./bundleDetails")
-const performScreening = require("./screening")
-const constructBundle = require("./constructBundle")
-const postRequest = require("./network/postRequest")
-const createActivityDetail = require("./createActivityDetail")
-const createTask = require("./resources/taskResource")
-const createPatient = require("./resources/patientResource")
-const createCarePlan = require("./resources/carePlanResource")
+const util = require("util");
+const getAuthCode = require("./network/auth");
+const getBundleResourceIds = require("./bundleDetails");
+const constructBundle = require("./constructBundle");
+const postRequest = require("./network/postRequest");
+const createActivityDetail = require("./createActivityDetail");
+const createPatient = require("./resources/patientResource");
+const createCarePlan = require("./resources/carePlanResource");
+const createUserTasks = require("./createUserTasks");
 
 
 async function main() {
@@ -39,8 +34,9 @@ async function main() {
                 birthDate: patient.birthDate
             }
 
+            const organisationID = 10173
             //populating the patient resource
-            const data = createPatient(patient.identifier, patient.family, patient.given, patient.telecom, patient.gender, patient.birthDate, patient.city, patient.district)
+            const data = createPatient(patient.identifier, patient.family, patient.given, patient.telecom, patient.gender, patient.birthDate, patient.city, patient.district,organisationID )
 
             //adding the necessary request method and URL for Patient resource.
             patients.push({
@@ -77,9 +73,6 @@ async function main() {
             const patientBundleResponse = await postRequest(patientDataRequest, auth)
             console.log((patientBundleResponse).data);
 
-
-            const userIDs = {}
-
             //looping through the PatientBundle Response to get specific information and adding it to the clientDetails which already had some client detials from the first loop
             patientBundleResponse.data.entry.forEach(data => {
                 const userData = clientDetails[data.resource.identifier[0].value]
@@ -91,65 +84,23 @@ async function main() {
                 clientDetails[data.resource.identifier[0].value] = bundleData;
             });
 
-            const tasks = [];
-
             //looping through clientDetails to get each client's information and populating Tasks with that information.
-            Object.keys(clientDetails).forEach(patientid => {
-
-                const details = clientDetails[patientid]
-
-                const tbCovid = createTask("TB/COVID Screening", details.userId, details.userName, details.nextAppointment)
-
-                const demographicUpdates = createTask("Demographic Updates", details.userId, details.userName, details.nextAppointment)
-
-                const guardianUpdates = createTask("Guardian Updates", details.userId, details.userName, details.nextAppointment)
-
-                const vitals = createTask("Vitals", details.userId, details.userName, details.nextAppointment)
-
-                const womenHealth = createTask("Women's Health Screening", details.userId, details.userName, details.nextAppointment)
-
-                const clinicalReg = createTask("Clinical Registration", details.userId, details.userName, details.nextAppointment)
-
-                const nextAppointment = createTask("TB History, Regimen and Next Appointment", details.userId, details.userName, details.nextAppointment)
-
-                //screening tasks by age and gender to get the correct next appointment tasks/questionnaires
-                performScreening(details.gender, details.birthDate, tasks, guardianUpdates, vitals, womenHealth)
-
-                const tasksArray = [demographicUpdates, guardianUpdates, tbCovid, clinicalReg, vitals, nextAppointment]
-
-                const taskMethod = {
-                    "method": "POST",
-                    "url": "Task/"
-                }
-
-                tasksArray.forEach(element => {
-                    tasks.push(
-                        {
-                            resource: element, "request": taskMethod
-                        }
-                    );
-
-                });
-
-
-            });
-
+            const tasks = createUserTasks(clientDetails);
 
             //putting all the client tasks in a Bundle to be sent to the server in bulk
-            const constructedData = constructBundle(tasks)
+            const constructedData = constructBundle(tasks);
 
             //sendig the tasks Bundle to the server and saving the response as taskBundleResponse
-            const taskBundleResponse = await postRequest(constructedData, auth)
+            const taskBundleResponse = await postRequest(constructedData, auth);
             console.log(taskBundleResponse.data.entry);
 
 
             //looping through the saved tasks Bundle response to to get "Location" of tasks and populating the locations in a Bundle to send to the server to get full client details
-            const taskDataRequest = getBundleResourceIds(taskBundleResponse)
-            console.log(taskDataRequest)
-
+            const taskDataRequest = getBundleResourceIds(taskBundleResponse);
+            console.log(taskDataRequest);
 
             //sending the saved Bundle response with the task locations to the server and saving the response as bundleResponse
-            const fullTaskResponse = await postRequest(taskDataRequest, auth)
+            const fullTaskResponse = await postRequest(taskDataRequest, auth);
             console.log((fullTaskResponse).data);
 
             //creating an object of usertasks

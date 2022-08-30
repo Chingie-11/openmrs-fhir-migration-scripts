@@ -1,5 +1,5 @@
 //This function takes in parameters of a patient and returns a patient resource
-module.exports = function createPatient(identifier, family, given, telecom, gender, birthDate, city, district ){
+module.exports = function createPatient(identifier, family, given, telecom, gender, birthDate, city, district, organisationID){
     const data = {
         "resourceType": "Patient",
         "meta": {
@@ -40,7 +40,7 @@ module.exports = function createPatient(identifier, family, given, telecom, gend
             "country": "Malawi"
         }],
         "managingOrganization": {
-            "reference": "Organization/10173"
+            "reference": "Organization/" + organisationID
         },
         "generalPractitioner": [{
             "reference": "",
