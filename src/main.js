@@ -12,6 +12,7 @@ const createPatient = require("./resources/patientResource");
 const createCarePlan = require("./resources/carePlanResource");
 const createUserTasks = require("./createUserTasks");
 const encryptData = require ("./encryption");
+const constants = require("./constants");
 
 async function main() {
     //Authentication information 
@@ -34,7 +35,7 @@ async function main() {
                 birthDate: patient.birthDate
             }
 
-            const organisationID = 10173
+            const organisationID = 16139
             //populating the patient resource
             const encryptGivenName = encryptData(patient.given);
             const encryptFamilyName = encryptData(patient.family);
@@ -129,13 +130,13 @@ async function main() {
 
             //creating task models to be using in carePlan "Activity"
             const activityDetail = {
-                "TB/COVID Screening": createActivityDetail("TB/COVID Screening"),
-                "Demographic Updates": createActivityDetail("Demographic Updates"),
-                "Guardian Updates": createActivityDetail("Guardian Updates"),
-                "Vitals": createActivityDetail("Vitals"),
-                "Clinical Registration": createActivityDetail("Clinical Registration"),
-                "TB History, Regimen and Next Appointment": createActivityDetail("TB History, Regimen and Next Appointment"),
-                "Women's Health Screening": createActivityDetail("Women's Health Screening")
+                "TB/COVID Screening": createActivityDetail(constants.tbCovideScreen),
+                "Demographic Updates": createActivityDetail(constants.demographicsUpdates),
+                "Guardian Updates": createActivityDetail(constants.guardianUpdates),
+                "Vitals": createActivityDetail(constants.vitals),
+                "Clinical Registration": createActivityDetail(constants.clinicalRegistration),
+                "TB History, Regimen and Next Appointment": createActivityDetail(constants.tbHistory),
+                "Women's Health Screening": createActivityDetail(constants.womenHealth)
 
             };
 

@@ -22,22 +22,28 @@ module.exports = function createUserTasks(clientDetails){
 
                 const nextAppointment = createTask("TB History, Regimen and Next Appointment", details.userId, details.userName, details.nextAppointment)
 
+
+                const tasksArray = [demographicUpdates, guardianUpdates, tbCovid, clinicalReg, vitals, nextAppointment,womenHealth]
+                console.log(tasksArray)
+
                 //screening tasks by age and gender to get the correct next appointment tasks/questionnaires
-                performScreening(details.gender, details.birthDate, tasks, guardianUpdates, vitals, womenHealth)
-
-                const tasksArray = [demographicUpdates, guardianUpdates, tbCovid, clinicalReg, vitals, nextAppointment]
-
+                performScreening(details.gender, details.birthDate, tasks, tasksArray, guardianUpdates, vitals, womenHealth)
+                console.log(tasksArray)
+                
                 const taskMethod = {
                     "method": "POST",
                     "url": "Task/"
                 }
 
                 tasksArray.forEach(element => {
-                    tasks.push(
-                        {
-                            resource: element, "request": taskMethod
-                        }
-                    );
+                    if (element !== womenHealth ) {
+                        tasks.push(
+                            {
+                                resource: element, "request": taskMethod
+                            }
+                        );
+                    }
+                    
 
                 });
 

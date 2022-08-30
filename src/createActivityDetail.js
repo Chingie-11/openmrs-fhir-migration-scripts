@@ -1,3 +1,4 @@
+const constants = require("./constants");
 
 module.exports = function createActivityDetail(taskName) {
     let dateNow = new Date();
@@ -5,7 +6,7 @@ module.exports = function createActivityDetail(taskName) {
         "outcomeReference": [
             {
                 "refere3nce": "",
-                "display": "TB/COVID Screening"
+                "display": constants.tbCovideScreen
             }
         ],
         "detail": {
@@ -15,10 +16,10 @@ module.exports = function createActivityDetail(taskName) {
                     {
                         "system": "https://d-tree.org",
                         "code": "client-tb-covid-screening",
-                        "display": "TB/COVID Screening"
+                        "display": constants.tbCovideScreen
                     }
                 ],
-                "text": "TB/COVID Screening"
+                "text": constants.tbCovideScreen
             },
             "status": "in-progress",
             "scheduledPeriod": {
@@ -31,60 +32,60 @@ module.exports = function createActivityDetail(taskName) {
                     "display": "Test CHW"
                 }
             ],
-            "description": "TB/COVID Screening"
+            "description": constants.tbCovideScreen
         }
     }
 
 
-    if (taskName === "TB/COVID Screening") {
-        taskModel.outcomeReference[0].display = "TB/COVID Screening"
+    if (taskName === constants.tbCovideScreen) {
+        taskModel.outcomeReference[0].display = constants.tbCovideScreen
         taskModel.detail.code.coding[0].code = "client-tb-covid-screening"
-        taskModel.detail.code.coding[0].display = "TB/COVID Screening"
-        taskModel.detail.code.text = "TB/COVID Screening"
-        taskModel.detail.description = "TB/COVID Screening"
+        taskModel.detail.code.coding[0].display = constants.tbCovideScreen
+        taskModel.detail.code.text = constants.tbCovideScreen
+        taskModel.detail.description = constants.tbCovideScreen
 
-    } else if (taskName === "Demographic Updates") {
-        taskModel.outcomeReference[0].display = "Demographic Updates"
+    } else if (taskName === constants.demographicsUpdates) {
+        taskModel.outcomeReference[0].display = constants.demographicsUpdates
         taskModel.detail.code.coding[0].code = "patient-demographic-updates"
-        taskModel.detail.code.coding[0].display = "Demographic Updates"
-        taskModel.detail.code.text = "Demographic Updates"
-        taskModel.detail.description = "Demographic Updates"
+        taskModel.detail.code.coding[0].display = constants.demographicsUpdates
+        taskModel.detail.code.text = constants.demographicsUpdates
+        taskModel.detail.description = constants.demographicsUpdates
 
-    } else if (taskName === "Guardian Updates") {
-        taskModel.outcomeReference[0].display = "Guardian Updates"
+    } else if (taskName === constants.guardianUpdates) {
+        taskModel.outcomeReference[0].display = constants.guardianUpdates
         taskModel.detail.code.coding[0].code = "patient-guardian-updates"
-        taskModel.detail.code.coding[0].display = "Guardian Updates"
-        taskModel.detail.code.text = "Guardian Updates"
-        taskModel.detail.description = "Guardian Updates"
+        taskModel.detail.code.coding[0].display = constants.guardianUpdates
+        taskModel.detail.code.text = constants.guardianUpdates
+        taskModel.detail.description = constants.guardianUpdates
 
-    } else if (taskName === "Vitals") {
-       taskModel.outcomeReference[0].display = "Vitals"
+    } else if (taskName === constants.vitals) {
+       taskModel.outcomeReference[0].display = constants.vitals
         taskModel.detail.code.coding[0].code = "client-vitals"
-        taskModel.detail.code.coding[0].display = "Vitals"
-        taskModel.detail.code.text = "Vitals"
-        taskModel.detail.description = "Vitals"
+        taskModel.detail.code.coding[0].display = constants.vitals
+        taskModel.detail.code.text = constants.vitals
+        taskModel.detail.description = constants.vitals
 
-    } else if (taskName === "Women's Health Screening") {
-        taskModel.outcomeReference[0].display = "Women's Health Screening"
+    } else if (taskName === constants.womenHealth) {
+        taskModel.outcomeReference[0].display = constants.womenHealth
         taskModel.detail.code.coding[0].code = "client-womens-health-screening"
-        taskModel.detail.code.coding[0].display = "Women's Health Screening"
-        taskModel.detail.code.text = "Women's Health Screening"
-        taskModel.detail.description = "Women's Health Screening"
+        taskModel.detail.code.coding[0].display = constants.womenHealth
+        taskModel.detail.code.text = constants.womenHealth
+        taskModel.detail.description = constants.womenHealth
 
-    } else if (taskName === "Clinical Registration") {
-        taskModel.outcomeReference[0].display = "Clinical Registration"
+    } else if (taskName === constants.clinicalRegistration) {
+        taskModel.outcomeReference[0].display = constants.clinicalRegistration
         taskModel.detail.code.coding[0].code = "art-client-clinical-registration"
-        taskModel.detail.code.coding[0].display = "Clinical Registration"
-        taskModel.detail.code.text = "Clinical Registration"
-        taskModel.detail.description = "Clinical Registration"
+        taskModel.detail.code.coding[0].display = constants.clinicalRegistration
+        taskModel.detail.code.text = constants.clinicalRegistration
+        taskModel.detail.description = constants.clinicalRegistration
 
        
-    } else if (taskName === "TB History, Regimen and Next Appointment") {
-        taskModel.outcomeReference[0].display = "TB History, Regimen and Next Appointment"
+    } else if (taskName === constants.tbHistory) {
+        taskModel.outcomeReference[0].display = constants.tbHistory
         taskModel.detail.code.coding[0].code = " client-tb-history-regimen-and-next-appointment"
-        taskModel.detail.code.coding[0].display = "TB History, Regimen and Next Appointment"
-        taskModel.detail.code.text = "TB History, Regimen and Next Appointment"
-        taskModel.detail.description = "TB History, Regimen and Next Appointment"
+        taskModel.detail.code.coding[0].display = constants.tbHistory
+        taskModel.detail.code.text = constants.tbHistory
+        taskModel.detail.description = constants.tbHistory
     }
 
     return taskModel
