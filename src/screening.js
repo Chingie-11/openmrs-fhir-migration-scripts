@@ -17,10 +17,10 @@ module.exports = function performScreening(gender, birthDate, tasks, tasksArray,
 
 
 
-    tasksArray.forEach(task => {
+    return tasksArray.map(task => {
+        
         //guardian updates screening
-        if (task === constants.guardianUpdates) {
-
+        if (task.description === constants.guardianUpdates) {
             if (yearsDiff >= 15) {
                 guardianUpdates.reasonReference.reference = "Questionnaire/patient-guardian-updates-15-years-plus"
             } else {
@@ -29,17 +29,13 @@ module.exports = function performScreening(gender, birthDate, tasks, tasksArray,
         }
 
         //women health screening
-        else if (task === constants.womenHealth && gender === "female") {
-
+        else if (task.description === constants.womenHealth && gender === "female") {
             if (yearsDiff < 15 && yearsDiff >= 9) {
                 womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-9-to-14-years"
                 addWomenHealth
-
             } else if (yearsDiff < 25 && yearsDiff >= 15) {
-
                 womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-15-to-25-years"
                 addWomenHealth
-
             } else if (yearsDiff >= 25) {
                 womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-25-years-plus"
                 addWomenHealth
@@ -47,9 +43,9 @@ module.exports = function performScreening(gender, birthDate, tasks, tasksArray,
         }
 
         //vitals screening
-        else if (task === constants.vitals) {
+        else if (task.description === constants.vitals) {
 
-            if (gender === female) {
+            if (gender === "female") {
 
                 if (monthsDiff < 6) {
                     vitals.reasonReference.reference = "Questionnaire/art-client-vitals-female-0-to-6-months"
@@ -85,6 +81,7 @@ module.exports = function performScreening(gender, birthDate, tasks, tasksArray,
                     vitals.reasonReference.reference = "Questionnaire/art-client-vitals-male-40-years-plus"
                 }
             }
-        }
+        } 
+        return task
     });
 }

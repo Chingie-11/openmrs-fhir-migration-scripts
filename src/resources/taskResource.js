@@ -55,6 +55,7 @@ module.exports = function createTask(taskName, userId, userName, nextAppointment
     } else if (taskName === "Demographic Updates") {
         task.description = "Demographic Updates"
         task.reasonReference.display = "Demographic Updates"
+        task.reasonReference.reference = "Questionnaire/patient-demographic-updates"
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
             "code": "clinic-visit-task-order-2"
@@ -91,6 +92,7 @@ module.exports = function createTask(taskName, userId, userName, nextAppointment
         }
     } else if (taskName === "Clinical Registration") {
         task.description = "Clinical Registration"
+        task.reasonReference.reference = "Questionnaire/art-client-clinical-registration"
         task.reasonReference.display = "Clinical Registration"
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
@@ -99,6 +101,7 @@ module.exports = function createTask(taskName, userId, userName, nextAppointment
         
     } else if (taskName === "TB History, Regimen and Next Appointment") {
         task.description = "TB History, Regimen and Next Appointment"
+        task.reasonReference.reference = "Questionnaire/art-client-tb-history-regimen-and-next-appointment-routine"
         task.reasonReference.display = "TB History, Regimen and Next Appointment"
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
