@@ -11,14 +11,14 @@ const createActivityDetail = require("./createActivityDetail");
 const createPatient = require("./resources/patientResource");
 const createCarePlan = require("./resources/carePlanResource");
 const createUserTasks = require("./createUserTasks");
-
+const encryptData = require ("./encryption");
 
 async function main() {
     //Authentication information 
     const auth = await getAuthCode();
 
     console.log(auth);
-
+    
     //converting CSV file to JSON 
     csv().fromFile(path.join(__dirname, "./assets/csv/minidump.csv")).then(async (json) => {
         const patients = [];
@@ -36,7 +36,9 @@ async function main() {
 
             const organisationID = 10173
             //populating the patient resource
-            const data = createPatient(patient.identifier, patient.family, patient.given, patient.telecom, patient.gender, patient.birthDate, patient.city, patient.district,organisationID )
+            const encryptGivenName = encryptData(patient.given);
+            const encryptFamilyName = encryptData(patient.family);
+            const data = createPatient(patient.identifier, encryptFamilyName, encryptGivenName, patient.telecom, patient.gender, patient.birthDate, patient.city, patient.district,organisationID )
 
             //adding the necessary request method and URL for Patient resource.
             patients.push({
