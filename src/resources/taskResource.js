@@ -1,4 +1,5 @@
 const  { v4: uuidv4 } = require('uuid');
+const constants = require('../constants');
 
 module.exports = function createTask(taskName, userId, userName, nextAppointment) {
     let dateNow = new Date();
@@ -21,7 +22,7 @@ module.exports = function createTask(taskName, userId, userName, nextAppointment
         "status": "ready",
         "intent": "plan",
         "priority": "routine",
-        "description": "TB/COVID Screening",
+        "description": constants.tbCovideScreen,
         "for": {
             "reference": "Patient/" + userId,
             "display": userName
@@ -41,20 +42,20 @@ module.exports = function createTask(taskName, userId, userName, nextAppointment
         },
         "reasonReference": {
             "reference": "Questionnaire/patient-tb-covid",
-            "display": "TB/COVID Screening"
+            "display": constants.tbCovideScreen
         }
     };
 
-    if (taskName === "TB/COVID Screening") {
-        task.description = "TB/COVID Screening"
-        task.reasonReference.display = "TB/COVID Screening"
+    if (taskName === constants.tbCovideScreen) {
+        task.description = constants.tbCovideScreen
+        task.reasonReference.display = constants.tbCovideScreen
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
             "code": "clinic-visit-task-order-1"
         }
-    } else if (taskName === "Demographic Updates") {
-        task.description = "Demographic Updates"
-        task.reasonReference.display = "Demographic Updates"
+    } else if (taskName === constants.demographicsUpdates) {
+        task.description = constants.demographicsUpdates
+        task.reasonReference.display = constants.demographicsUpdates
         task.reasonReference.reference = "Questionnaire/patient-demographic-updates"
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
@@ -65,9 +66,9 @@ module.exports = function createTask(taskName, userId, userName, nextAppointment
             "code": "guardian-visit"
         }
 
-    } else if (taskName === "Guardian Updates") {
-        task.description = "Guardian Updates"
-        task.reasonReference.display = "Guardian Updates"
+    } else if (taskName === constants.guardianUpdates) {
+        task.description = constants.guardianUpdates
+        task.reasonReference.display = constants.guardianUpdates
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
             "code": "clinic-visit-task-order-3"
@@ -76,33 +77,33 @@ module.exports = function createTask(taskName, userId, userName, nextAppointment
             "system": "https://d-tree.org",
             "code": "guardian-visit"
         }
-    } else if (taskName === "Vitals") {
-        task.description = "Vitals"
-        task.reasonReference.display = "Vitals"
+    } else if (taskName === constants.vitals) {
+        task.description = constants.vitals
+        task.reasonReference.display = constants.vitals
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
             "code": "clinic-visit-task-order-4"
         }
-    } else if (taskName === "Women's Health Screening") {
-        task.description = "Women's Health Screening"
-        task.reasonReference.display = "Women's Health Screening"
+    } else if (taskName === constants.womenHealth) {
+        task.description = constants.womenHealth
+        task.reasonReference.display = constants.womenHealth
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
             "code": "clinic-visit-task-order-5"
         }
-    } else if (taskName === "Clinical Registration") {
-        task.description = "Clinical Registration"
+    } else if (taskName === constants.clinicalRegistration) {
+        task.description = constants.clinicalRegistration
         task.reasonReference.reference = "Questionnaire/art-client-clinical-registration"
-        task.reasonReference.display = "Clinical Registration"
+        task.reasonReference.display = constants.clinicalRegistration
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
             "code": "clinic-visit-task-order-6"
         }
         
-    } else if (taskName === "TB History, Regimen and Next Appointment") {
-        task.description = "TB History, Regimen and Next Appointment"
+    } else if (taskName === constants.tbHistory) {
+        task.description = constants.tbHistory
         task.reasonReference.reference = "Questionnaire/art-client-tb-history-regimen-and-next-appointment-routine"
-        task.reasonReference.display = "TB History, Regimen and Next Appointment"
+        task.reasonReference.display = constants.tbHistory
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
             "code": "clinic-visit-task-order-7"

@@ -7,7 +7,7 @@ const oauth = require('axios-oauth-client');
 const util = require("util")
 const createObservation = require("./resources/observationResource")
 const getAuthCode = require("./network/auth")
-const constructBundle = require("./constructBundle")
+const constructBundle = require("./bundle/constructBundle")
 const postRequest = require("./network/postRequest")
 
 async function main() {
@@ -31,7 +31,7 @@ async function main() {
         try {
             const response = postRequest(constructedData)
             console.log(response.data);
-            
+
         } catch (error) {
             console.log(util.inspect(error, { showHidden: false, depth: null, colors: true }));
         }

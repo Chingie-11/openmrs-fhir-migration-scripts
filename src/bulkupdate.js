@@ -6,7 +6,7 @@ const axios = require("axios").default;
 const oauth = require('axios-oauth-client');
 const util = require("util")
 const getAuthCode = require("./network/auth")
-const constructBundle = require("./constructBundle")
+const constructBundle = require("./bundle/constructBundle")
 const postRequest = require("./network/postRequest")
 const createPatient = require ("./resources/patientResource")
 
