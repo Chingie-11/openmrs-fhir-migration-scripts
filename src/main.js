@@ -13,7 +13,7 @@ const createCarePlan = require("./resources/carePlanResource");
 const createUserTasks = require("./utilities/createUserTasks");
 const encryptData = require("./utilities/encryption");
 const constants = require("./utilities/constants");
-const prompt = require('prompt-sync');
+const prompt = require('prompt-sync')();
 
 async function main() {
     //Authentication information 
@@ -21,11 +21,13 @@ async function main() {
 
     console.log(auth);
 
+    const organisationID = prompt('What is the organisation ID');
     //converting CSV file to JSON 
-    csv().fromFile(path.join(__dirname, "./assets/csv/demographicsdump.csv")).then(async (json) => {
+    csv().fromFile(path.join(__dirname, "./assets/csv/minidump.csv")).then(async (json) => {
         const patients = [];
         const clientDetails = {}
 
+        
         //lopping through the created JSON to get each client's details and populating them in client details for future use with tasks.
         json.forEach(patient => {
 
@@ -36,8 +38,6 @@ async function main() {
                 birthDate: patient.birthDate
             }
 
-
-            const organisationID = prompt('What is the organisation ID');
             //populating the patient resource
             const encryptGivenName = encryptData(patient.given);
             const encryptFamilyName = encryptData(patient.family);
