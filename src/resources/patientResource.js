@@ -33,6 +33,8 @@ module.exports = function createPatient(identifier, family, given, telecom, gend
         "gender": gender.toLowerCase(),
         "birthDate": birthDate,
         "address": [{
+            "state":"tracingCatchment",
+            "text":"physicalLocator",
             "use": "home",
             "type": "physical",
             "city": city,
@@ -43,12 +45,7 @@ module.exports = function createPatient(identifier, family, given, telecom, gend
             "reference": "Organization/" + organisationID
         },
         "generalPractitioner": [{
-            "reference": "",
-            "type": "Practitioner",
-            "identifier": {
-                "use": "official",
-                "value": "chwtrial123"
-            }
+            "reference": "Practitioner/649b723c-28f3-4f5f-8fcf-28405b57a1ec"
         }]
 
     };

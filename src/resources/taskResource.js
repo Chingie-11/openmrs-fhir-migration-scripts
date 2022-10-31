@@ -1,5 +1,5 @@
 const  { v4: uuidv4 } = require('uuid');
-const constants = require('../constants');
+const constants = require('../utilities/constants');
 
 module.exports = function createTask(taskName, userId, userName, nextAppointment) {
     let dateNow = new Date();
@@ -45,13 +45,20 @@ module.exports = function createTask(taskName, userId, userName, nextAppointment
             "display": constants.tbCovideScreen
         }
     };
-
-    if (taskName === constants.tbCovideScreen) {
+    if(taskName === constants.screening){
+        task.description = constants.screening
+        task.reasonReference.display = constants.screening
+        task.reasonReference.reference = "Questionnaire/patient-screening"
+        task.meta.tag[0] = {
+            "system": "https://d-tree.org",
+            "code": "clinic-visit-task-order-1"
+        }
+    }else if (taskName === constants.tbCovideScreen) {
         task.description = constants.tbCovideScreen
         task.reasonReference.display = constants.tbCovideScreen
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
-            "code": "clinic-visit-task-order-1"
+            "code": "clinic-visit-task-order-2"
         }
     } else if (taskName === constants.demographicsUpdates) {
         task.description = constants.demographicsUpdates
@@ -59,7 +66,7 @@ module.exports = function createTask(taskName, userId, userName, nextAppointment
         task.reasonReference.reference = "Questionnaire/patient-demographic-updates"
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
-            "code": "clinic-visit-task-order-2"
+            "code": "clinic-visit-task-order-3"
         }
         task.meta.tag[1] = {
             "system": "https://d-tree.org",
@@ -71,7 +78,7 @@ module.exports = function createTask(taskName, userId, userName, nextAppointment
         task.reasonReference.display = constants.guardianUpdates
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
-            "code": "clinic-visit-task-order-3"
+            "code": "clinic-visit-task-order-4"
         }
         task.meta.tag[1] = {
             "system": "https://d-tree.org",
@@ -82,14 +89,14 @@ module.exports = function createTask(taskName, userId, userName, nextAppointment
         task.reasonReference.display = constants.vitals
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
-            "code": "clinic-visit-task-order-4"
+            "code": "clinic-visit-task-order-5"
         }
-    } else if (taskName === constants.womenHealth) {
-        task.description = constants.womenHealth
-        task.reasonReference.display = constants.womenHealth
+    } else if (taskName === constants.womensHealthScreening) {
+        task.description = constants.womensHealthScreening
+        task.reasonReference.display = constants.womensHealthScreening
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
-            "code": "clinic-visit-task-order-5"
+            "code": "clinic-visit-task-order-12"
         }
     } else if (taskName === constants.clinicalRegistration) {
         task.description = constants.clinicalRegistration
@@ -97,16 +104,16 @@ module.exports = function createTask(taskName, userId, userName, nextAppointment
         task.reasonReference.display = constants.clinicalRegistration
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
-            "code": "clinic-visit-task-order-6"
+            "code": "clinic-visit-task-order-13"
         }
         
-    } else if (taskName === constants.tbHistory) {
-        task.description = constants.tbHistory
-        task.reasonReference.reference = "Questionnaire/art-client-tb-history-regimen-and-next-appointment-routine"
-        task.reasonReference.display = constants.tbHistory
+    } else if (taskName === constants.tbHistoryAndRegimen) {
+        task.description = constants.tbHistoryAndRegimen
+        task.reasonReference.reference = "Questionnaire/art-client-tb-history-regimen"
+        task.reasonReference.display = constants.tbHistoryAndRegimen
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
-            "code": "clinic-visit-task-order-7"
+            "code": "clinic-visit-task-order-16"
         }
         task.meta.tag[1] = {
             "system": "https://d-tree.org",

@@ -1,9 +1,10 @@
 module.exports = {
-    tbHistory: "TB History, Regimen and Next Appointment",
+    tbHistoryAndRegimen: "TB History and Regimen",
     clinicalRegistration: "Clinical Registration",
-    womenHealth: "Women's Health Screening",
+    womensHealthScreening: "Women's Health Screening",
     vitals: "Vitals",
     guardianUpdates: "Guardian Updates",
     demographicsUpdates: "Demographic Updates",
-    tbCovideScreen : "TB/COVID Screening"
+    tbCovideScreen : "tbCovidScreening",
+    screening : "Screening"
 }

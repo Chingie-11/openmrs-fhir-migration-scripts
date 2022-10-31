@@ -7,21 +7,22 @@ const getAuthCode = require("./network/auth");
 const getBundleResourceIds = require("./bundle/bundleDetails");
 const constructBundle = require("./bundle/constructBundle");
 const postRequest = require("./network/postRequest");
-const createActivityDetail = require("./createActivityDetail");
+const createActivityDetail = require("./utilities/createActivityDetail");
 const createPatient = require("./resources/patientResource");
 const createCarePlan = require("./resources/carePlanResource");
-const createUserTasks = require("./createUserTasks");
-const encryptData = require ("./encryption");
-const constants = require("./constants");
+const createUserTasks = require("./utilities/createUserTasks");
+const encryptData = require("./utilities/encryption");
+const constants = require("./utilities/constants");
+const prompt = require('prompt-sync');
 
 async function main() {
     //Authentication information 
     const auth = await getAuthCode();
 
     console.log(auth);
-    
+
     //converting CSV file to JSON 
-    csv().fromFile(path.join(__dirname, "./assets/csv/minidump.csv")).then(async (json) => {
+    csv().fromFile(path.join(__dirname, "./assets/csv/demographicsdump.csv")).then(async (json) => {
         const patients = [];
         const clientDetails = {}
 
@@ -35,11 +36,12 @@ async function main() {
                 birthDate: patient.birthDate
             }
 
-            const organisationID = 16139
+
+            const organisationID = prompt('What is the organisation ID');
             //populating the patient resource
             const encryptGivenName = encryptData(patient.given);
             const encryptFamilyName = encryptData(patient.family);
-            const data = createPatient(patient.identifier, encryptFamilyName, encryptGivenName, patient.telecom, patient.gender, patient.birthDate, patient.city, patient.district,organisationID )
+            const data = createPatient(patient.identifier, encryptFamilyName, encryptGivenName, patient.telecom, patient.gender, patient.birthDate, patient.city, patient.district, organisationID)
 
             //adding the necessary request method and URL for Patient resource.
             patients.push({
@@ -93,7 +95,7 @@ async function main() {
             //putting all the client tasks in a Bundle to be sent to the server in bulk
             const constructedData = constructBundle(tasks);
 
-            //sendig the tasks Bundle to the server and saving the response as taskBundleResponse
+            //sending the tasks Bundle to the server and saving the response as taskBundleResponse
             const taskBundleResponse = await postRequest(constructedData, auth);
             console.log(taskBundleResponse.data.entry);
 
@@ -118,7 +120,8 @@ async function main() {
                     taskType: task.resource.description,
                     userName: task.resource.for.display,
                     appointmentDate: task.resource.executionPeriod.end,
-                    currentDate: task.resource.executionPeriod.start
+                    currentDate: task.resource.executionPeriod.start,
+                    questionnaireCode: task.resource.reasonReference.reference.substring(14)
                 }
                 if (user === undefined || user === null) {
                     userTasks[patientID] = [newUserTask]
@@ -130,14 +133,14 @@ async function main() {
 
             //creating task models to be using in carePlan "Activity"
             const activityDetail = {
+                "Screening": createActivityDetail(constants.screening),
                 "TB/COVID Screening": createActivityDetail(constants.tbCovideScreen),
                 "Demographic Updates": createActivityDetail(constants.demographicsUpdates),
                 "Guardian Updates": createActivityDetail(constants.guardianUpdates),
                 "Vitals": createActivityDetail(constants.vitals),
                 "Clinical Registration": createActivityDetail(constants.clinicalRegistration),
-                "TB History, Regimen and Next Appointment": createActivityDetail(constants.tbHistory),
-                "Women's Health Screening": createActivityDetail(constants.womenHealth)
-
+                "TB History, Regimen and Next Appointment": createActivityDetail(constants.tbHistoryAndRegimen),
+                "Women's Health Screening": createActivityDetail(constants.womensHealthScreening)
             };
 
 
@@ -162,6 +165,8 @@ async function main() {
             //sending careplans Bundle to server and saving response as carePlanResponse
             const carePlanResponse = await postRequest(constructedCarePlan, auth)
             console.log((carePlanResponse).data);
+
+
 
 
 

@@ -5,7 +5,7 @@ module.exports = function createActivityDetail(taskName) {
     let taskModel = {
         "outcomeReference": [
             {
-                "refere3nce": "",
+                "reference": "",
                 "display": constants.tbCovideScreen
             }
         ],
@@ -36,10 +36,16 @@ module.exports = function createActivityDetail(taskName) {
         }
     }
 
-
-    if (taskName === constants.tbCovideScreen) {
+    if(taskName === constants.screening){
         taskModel.outcomeReference[0].display = constants.tbCovideScreen
-        taskModel.detail.code.coding[0].code = "client-tb-covid-screening"
+        taskModel.detail.code.coding[0].code = "patient-screening"
+        taskModel.detail.code.coding[0].display = constants.screening
+        taskModel.detail.code.text = constants.screening
+        taskModel.detail.description = constants.screening
+
+    }else if (taskName === constants.tbCovideScreen) {
+        taskModel.outcomeReference[0].display = constants.tbCovideScreen
+        taskModel.detail.code.coding[0].code = "patient-tb-covid"
         taskModel.detail.code.coding[0].display = constants.tbCovideScreen
         taskModel.detail.code.text = constants.tbCovideScreen
         taskModel.detail.description = constants.tbCovideScreen
@@ -65,12 +71,12 @@ module.exports = function createActivityDetail(taskName) {
         taskModel.detail.code.text = constants.vitals
         taskModel.detail.description = constants.vitals
 
-    } else if (taskName === constants.womenHealth) {
-        taskModel.outcomeReference[0].display = constants.womenHealth
+    } else if (taskName === constants.womensHealthScreening) {
+        taskModel.outcomeReference[0].display = constants.womensHealthScreening
         taskModel.detail.code.coding[0].code = "client-womens-health-screening"
-        taskModel.detail.code.coding[0].display = constants.womenHealth
-        taskModel.detail.code.text = constants.womenHealth
-        taskModel.detail.description = constants.womenHealth
+        taskModel.detail.code.coding[0].display = constants.womensHealthScreening
+        taskModel.detail.code.text = constants.womensHealthScreening
+        taskModel.detail.description = constants.womensHealthScreening
 
     } else if (taskName === constants.clinicalRegistration) {
         taskModel.outcomeReference[0].display = constants.clinicalRegistration
@@ -80,12 +86,12 @@ module.exports = function createActivityDetail(taskName) {
         taskModel.detail.description = constants.clinicalRegistration
 
        
-    } else if (taskName === constants.tbHistory) {
-        taskModel.outcomeReference[0].display = constants.tbHistory
-        taskModel.detail.code.coding[0].code = " client-tb-history-regimen-and-next-appointment"
-        taskModel.detail.code.coding[0].display = constants.tbHistory
-        taskModel.detail.code.text = constants.tbHistory
-        taskModel.detail.description = constants.tbHistory
+    } else if (taskName === constants.tbHistoryAndRegimen) {
+        taskModel.outcomeReference[0].display = constants.tbHistoryAndRegimen
+        taskModel.detail.code.coding[0].code = "art-client-tb-history-and-regimen"
+        taskModel.detail.code.coding[0].display = constants.tbHistoryAndRegimen
+        taskModel.detail.code.text = constants.tbHistoryAndRegimen
+        taskModel.detail.description = constants.tbHistoryAndRegimen
     }
 
     return taskModel

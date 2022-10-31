@@ -12,7 +12,7 @@ module.exports = function createCarePlan(patientid,tasks, activityDetail) {
         ],
         "status": "active",
         "intent": "plan",
-        "title": "ART Client Visit",
+        "title": "Client Already On ART Visit 1",
         "subject": tasks.map(x => ({
             "reference": "Patient/" + patientid,
             "display": x.userName
@@ -31,7 +31,7 @@ module.exports = function createCarePlan(patientid,tasks, activityDetail) {
 
             model.outcomeReference[0] = { reference: "Task/" + task.taskId, display: task.taskType }
             model.detail.scheduledPeriod.end = task.appointmentDate
-
+            model.detail.code.coding[0].code = task.questionnaireCode
             return model
         })
     }

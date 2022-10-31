@@ -1,4 +1,4 @@
-const createTask = require("./resources/taskResource")
+const createTask = require("../resources/taskResource")
 const performScreening = require("./screening")
 
 module.exports = function createUserTasks(clientDetails){
