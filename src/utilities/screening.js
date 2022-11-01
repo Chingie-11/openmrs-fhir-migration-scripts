@@ -2,14 +2,14 @@
 const dayjs = require('dayjs')
 const constants = require('./constants')
 
-module.exports = function performScreening(gender, birthDate, tasks, tasksArray, guardianUpdates, vitals, womenHealth) {
+module.exports = function performScreening(gender, birthDate, tasks, tasksArray, guardianUpdates, vitals, womensHealthScreening) {
 
     const currentDate = dayjs(Date.now())
     const dateThen = dayjs(birthDate)
     let yearsDiff = currentDate.diff(dateThen, 'year')
     let monthsDiff = currentDate.diff(dateThen, 'month')
     let addWomenHealth = tasks.push({
-        resource: womenHealth, "request": {
+        resource: womensHealthScreening, "request": {
             "method": "POST",
             "url": "Task/"
         }
@@ -31,13 +31,13 @@ module.exports = function performScreening(gender, birthDate, tasks, tasksArray,
         //women health screening
         else if (task.description === constants.womensHealthScreening && gender === "female") {
             if (yearsDiff < 15 && yearsDiff >= 9) {
-                womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-9-to-14-years"
+                womensHealthScreening.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-9-to-14-years"
                 addWomenHealth
             } else if (yearsDiff < 25 && yearsDiff >= 15) {
-                womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-15-to-25-years"
+                womensHealthScreening.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-15-to-25-years"
                 addWomenHealth
             } else if (yearsDiff >= 25) {
-                womenHealth.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-25-years-plus"
+                womensHealthScreening.reasonReference.reference = "Questionnaire/art-client-womens-health-screening-female-25-years-plus"
                 addWomenHealth
             }
         }

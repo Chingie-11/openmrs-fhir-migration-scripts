@@ -27,7 +27,8 @@ module.exports = function createCarePlan(patientid,tasks, activityDetail) {
             "display": "Test CHW"
         },
         activity: tasks.map(task => {
-            const model = JSON.parse(JSON.stringify(activityDetail[task.taskType]))
+            const model = activityDetail[task.taskType]
+            console.log(model);
 
             model.outcomeReference[0] = { reference: "Task/" + task.taskId, display: task.taskType }
             model.detail.scheduledPeriod.end = task.appointmentDate

@@ -131,17 +131,21 @@ async function main() {
                 }
             });
 
+            console.log(userTasks);
+
             //creating task models to be using in carePlan "Activity"
             const activityDetail = {
                 "Screening": createActivityDetail(constants.screening),
-                "TB/COVID Screening": createActivityDetail(constants.tbCovideScreen),
+                "tbCovidScreening": createActivityDetail(constants.tbCovideScreen),
                 "Demographic Updates": createActivityDetail(constants.demographicsUpdates),
                 "Guardian Updates": createActivityDetail(constants.guardianUpdates),
                 "Vitals": createActivityDetail(constants.vitals),
                 "Clinical Registration": createActivityDetail(constants.clinicalRegistration),
-                "TB History, Regimen and Next Appointment": createActivityDetail(constants.tbHistoryAndRegimen),
+                "TB History and Regimen": createActivityDetail(constants.tbHistoryAndRegimen),
                 "Women's Health Screening": createActivityDetail(constants.womensHealthScreening)
             };
+
+            console.log(activityDetail);
 
 
             //creating client CarePlans
