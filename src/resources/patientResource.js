@@ -33,11 +33,10 @@ module.exports = function createPatient(identifier, family, given, telecom, gend
         "gender": gender.toLowerCase(),
         "birthDate": birthDate,
         "address": [{
-            "state":"tracingCatchment",
-            "text":"physicalLocator",
+            "state":city,
+            "text":Landmark,
             "use": "home",
             "type": "physical",
-            "city": city,
             "district": district,
             "country": "Malawi"
         }],

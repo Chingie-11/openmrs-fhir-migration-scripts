@@ -9,7 +9,9 @@ module.exports = function createUserTasks(clientDetails){
 
                 const details = clientDetails[patientid]
 
-                const tbCovid = createTask(constants.tbCovideScreen, details.userId, details.userName, details.nextAppointment)
+                const screening = createTask(constants.screening, details.userId, details.userName, details.nextAppointment)
+
+                const tbCovid = createTask(constants.tbScreen, details.userId, details.userName, details.nextAppointment)
 
                 const demographicUpdates = createTask(constants.demographicsUpdates, details.userId, details.userName, details.nextAppointment)
 

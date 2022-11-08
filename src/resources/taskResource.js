@@ -22,7 +22,7 @@ module.exports = function createTask(taskName, userId, userName, nextAppointment
         "status": "ready",
         "intent": "plan",
         "priority": "routine",
-        "description": constants.tbCovideScreen,
+        "description": constants.tbCovidScreen,
         "for": {
             "reference": "Patient/" + userId,
             "display": userName
@@ -42,7 +42,7 @@ module.exports = function createTask(taskName, userId, userName, nextAppointment
         },
         "reasonReference": {
             "reference": "Questionnaire/patient-tb-covid",
-            "display": constants.tbCovideScreen
+            "display": constants.tbCovidScreen
         }
     };
     if(taskName === constants.screening){
@@ -53,9 +53,9 @@ module.exports = function createTask(taskName, userId, userName, nextAppointment
             "system": "https://d-tree.org",
             "code": "clinic-visit-task-order-1"
         }
-    }else if (taskName === constants.tbCovideScreen) {
-        task.description = constants.tbCovideScreen
-        task.reasonReference.display = constants.tbCovideScreen
+    }else if (taskName === constants.tbCovidScreen) {
+        task.description = constants.tbCovidScreen
+        task.reasonReference.display = constants.tbCovidScreen
         task.meta.tag[0] = {
             "system": "https://d-tree.org",
             "code": "clinic-visit-task-order-2"

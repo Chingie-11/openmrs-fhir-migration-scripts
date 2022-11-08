@@ -115,13 +115,15 @@ async function main() {
             fullTaskResponse.data.entry.forEach(task => {
                 let patientID = task.resource.for.reference.split("/")[1]
                 const user = userTasks[patientID]
+                const str = task.resource.reasonReference.reference
+                const reference = str.substring(str.indexOf('/')+1);
                 const newUserTask = {
                     taskId: task.resource.id,
                     taskType: task.resource.description,
                     userName: task.resource.for.display,
                     appointmentDate: task.resource.executionPeriod.end,
                     currentDate: task.resource.executionPeriod.start,
-                    questionnaireCode: task.resource.reasonReference.reference.substring(14)
+                    questionnaireCode: reference
                 }
                 if (user === undefined || user === null) {
                     userTasks[patientID] = [newUserTask]
@@ -136,7 +138,7 @@ async function main() {
             //creating task models to be using in carePlan "Activity"
             const activityDetail = {
                 "Screening": createActivityDetail(constants.screening),
-                "tbCovidScreening": createActivityDetail(constants.tbCovideScreen),
+                "TB/Covid Screening": createActivityDetail(constants.tbCovidScreen),
                 "Demographic Updates": createActivityDetail(constants.demographicsUpdates),
                 "Guardian Updates": createActivityDetail(constants.guardianUpdates),
                 "Vitals": createActivityDetail(constants.vitals),

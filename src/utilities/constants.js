@@ -5,6 +5,6 @@ module.exports = {
     vitals: "Vitals",
     guardianUpdates: "Guardian Updates",
     demographicsUpdates: "Demographic Updates",
-    tbCovideScreen : "tbCovidScreening",
+    tbCovidScreen : "TB/Covid Screening",
     screening : "Screening"
 }
